@@ -1,0 +1,55 @@
+--- When using SR data, please cite us and provide a link and/or a mention.
+
+
+ 
+,,,,,,,Playing Time,,,,Performance,,,,,,,,,,Penalty Kicks,,,,,,-additional
+Rk,Player,Nation,Pos,Squad,Age,Born,MP,Starts,Min,90s,GA,GA90,SoTA,Saves,Save%,W,D,L,CS,CS%,PKatt,PKA,PKsv,PKm,Save%,Matches,-9999
+1,Nícolas Andrade,br BRA,GK,Pisa,37,1988,6,6,540,6.0,14,2.33,26,12,46.2,1,0,5,0,0.0,1,0,0,1,,Matches,326d09ef
+2,Emil Audero,id IDN,GK,Cremonese,28,1997,34,34,3060,34.0,50,1.47,173,123,71.1,8,7,19,11,32.4,6,4,2,0,33.3,Matches,649b01d8
+3,Justin Bijlow,nl NED,GK,Genoa,27,1998,16,16,1395,15.5,20,1.29,65,45,69.2,6,3,7,5,31.3,5,5,0,0,0.0,Matches,53d93280
+4,Jean Butez,fr FRA,GK,Como,30,1995,38,38,3420,38.0,29,0.76,116,86,75.0,20,11,7,19,50.0,6,5,1,0,16.7,Matches,7f40333d
+5,Elia Caprile,it ITA,GK,Cagliari,23,2001,38,38,3420,38.0,53,1.39,175,121,69.7,11,10,17,8,21.1,2,2,0,0,0.0,Matches,97d7afbd
+6,Marco Carnesecchi,it ITA,GK,Atalanta,25,2000,37,37,3330,37.0,35,0.95,148,112,76.4,15,13,9,13,35.1,4,2,2,0,50.0,Matches,8ec56e62
+7,Oliver Christensen,dk DEN,GK,Fiorentina,26,1999,1,1,86,1.0,1,1.05,7,6,85.7,0,1,0,0,0.0,0,0,0,0,,Matches,af104654
+8,Nikita Contini,it ITA,GK,Napoli,29,1996,1,0,11,0.1,0,0.00,0,0,,0,0,0,1,,0,0,0,0,,Matches,e95069bb
+9,Edoardo Corvi,it ITA,GK,Parma,24,2001,17,17,1530,17.0,18,1.06,63,44,71.4,8,4,5,7,41.2,3,3,0,0,0.0,Matches,a89398db
+10,Raffaele Di Gennaro,it ITA,GK,Inter,31,1993,1,0,10,0.1,1,9.00,2,1,50.0,0,0,0,0,,0,0,0,0,,Matches,7a4050d5
+11,Michele Di Gregorio,it ITA,GK,Juventus,28,1997,30,29,2655,29.5,25,0.85,86,60,70.9,15,9,5,14,48.3,3,1,0,2,0.0,Matches,4e0c8d66
+12,Wladimiro Falcone,it ITA,GK,Lecce,30,1995,38,38,3420,38.0,50,1.32,158,108,68.4,10,8,20,10,26.3,6,4,2,0,33.3,Matches,9f5a610b
+13,Alessio Furlanetto,it ITA,GK,Lazio,23,2002,2,2,180,2.0,3,1.50,10,7,70.0,1,0,1,0,0.0,0,0,0,0,,Matches,95d9f4dd
+14,David de Gea,es ESP,GK,Fiorentina,34,1990,37,37,3330,37.0,49,1.32,169,119,71.0,9,14,14,10,27.0,6,5,1,0,16.7,Matches,7ba6d84e
+15,Franco Israel,uy URU,GK,Torino,25,2000,9,9,810,9.0,18,2.00,42,24,57.1,2,2,5,3,33.3,2,2,0,0,0.0,Matches,1f994616
+16,Nicola Leali,it ITA,GK,Genoa,32,1993,22,21,1847,20.5,28,1.36,86,58,67.4,4,8,9,4,19.0,2,2,0,0,0.0,Matches,5f9970a0
+17,Luca Lezzerini,it ITA,GK,Fiorentina,30,1995,1,0,4,0.0,0,0.00,0,0,,0,0,0,0,,0,0,0,0,,Matches,c9c32262
+18,Mike Maignan,fr FRA,GK,Milan,30,1995,37,37,3295,36.6,35,0.96,141,106,75.2,19,10,8,14,37.8,8,5,2,1,28.6,Matches,fcb38f57
+19,Josep Martinez,es ESP,GK,Inter,27,1998,5,5,450,5.0,4,0.80,14,10,71.4,4,1,0,3,60.0,0,0,0,0,,Matches,11d8aff0
+20,Alex Meret,it ITA,GK,Napoli,28,1997,11,11,979,10.9,12,1.10,33,21,63.6,9,0,2,4,36.4,2,2,0,0,0.0,Matches,9413b19f
+21,Vanja Milinković-Savić,rs SRB,GK,Napoli,28,1997,27,27,2430,27.0,24,0.89,77,52,68.8,14,7,6,11,40.7,8,5,3,0,37.5,Matches,9fa26bc2
+22,Lorenzo Montipò,it ITA,GK,Hellas Verona,29,1996,35,35,3150,35.0,54,1.54,142,87,62.0,3,11,21,5,14.3,5,2,3,0,60.0,Matches,c1d95617
+23,Edoardo Motta,it ITA,GK,Lazio,20,2005,9,9,810,9.0,10,1.11,32,22,68.8,5,2,2,3,33.3,1,0,1,0,100.0,Matches,35dfd6b5
+24,Arijanet Muric,xk KVX,GK,Sassuolo,26,1998,32,32,2880,32.0,43,1.34,161,118,73.3,12,6,14,6,18.8,6,5,1,0,16.7,Matches,99aa1a84
+25,Maduka Okoye,ng NGA,GK,Udinese,25,1999,30,30,2616,29.1,37,1.27,117,80,68.4,12,5,13,10,33.3,6,5,1,0,16.7,Matches,ab5c36dd
+26,Daniele Padelli,it ITA,GK,Udinese,39,1985,2,2,180,2.0,2,1.00,5,3,60.0,0,1,1,0,0.0,1,1,0,0,0.0,Matches,cf1c23d8
+27,Alberto Paleari,it ITA,GK,Torino,32,1992,29,29,2610,29.0,45,1.55,127,82,64.6,10,7,12,9,31.0,2,2,0,0,0.0,Matches,94a3606c
+28,Simone Perilli,it ITA,GK,Hellas Verona,30,1995,3,3,270,3.0,7,2.33,15,8,53.3,0,1,2,1,33.3,0,0,0,0,,Matches,b9e11c1d
+29,Mattia Perin,it ITA,GK,Juventus,32,1992,9,9,765,8.5,9,1.06,22,13,59.1,4,3,2,3,33.3,0,0,0,0,,Matches,4c62d0c8
+30,Massimo Pessina,it ITA,GK,Bologna,17,2007,4,3,353,3.9,2,0.51,9,7,77.8,2,1,0,3,100.0,0,0,0,0,,Matches,085a07e8
+31,Ivan Provedel,it ITA,GK,Lazio,31,1994,27,27,2430,27.0,27,1.00,116,87,76.7,8,10,9,12,44.4,4,3,1,0,25.0,Matches,277da414
+32,Federico Ravaglia,it ITA,GK,Bologna,25,1999,17,16,1470,16.3,29,1.78,81,52,64.2,4,3,9,2,12.5,2,2,0,0,0.0,Matches,6662d731
+33,Filippo Rinaldi,it ITA,GK,Parma,22,2002,1,1,90,1.0,0,0.00,4,4,100.0,0,1,0,1,100.0,0,0,0,0,,Matches,49124fc6
+34,Razvan Sava,ro ROU,GK,Udinese,23,2002,7,6,620,6.9,14,2.03,28,14,50.0,2,2,2,1,16.7,0,0,0,0,,Matches,41efbd34
+35,Simone Scuffet,it ITA,GK,Pisa,29,1996,7,7,630,7.0,15,2.14,29,14,48.3,0,3,4,1,14.3,3,3,0,0,0.0,Matches,41bd99ea
+36,Adrian Šemper,hr CRO,GK,Pisa,27,1998,25,25,2250,25.0,42,1.68,124,82,66.1,1,9,15,4,16.0,2,2,0,0,0.0,Matches,f02dde20
+37,Marco Silvestri,it ITA,GK,Cremonese,34,1991,4,4,360,4.0,7,1.75,22,15,68.2,0,3,1,0,0.0,0,0,0,0,,Matches,0d422df7
+38,Łukasz Skorupski,pl POL,GK,Bologna,34,1991,19,19,1592,17.7,18,1.02,51,33,64.7,10,4,5,8,42.1,2,2,0,0,0.0,Matches,ab4449d6
+39,Daniele Sommariva,it ITA,GK,Genoa,28,1997,2,1,176,2.0,4,2.05,12,8,66.7,0,0,1,0,0.0,0,0,0,0,,Matches,a8e7f7e9
+40,Yann Sommer,ch SUI,GK,Inter,36,1988,33,33,2960,32.9,30,0.91,95,64,68.4,23,5,5,15,45.5,4,4,0,0,0.0,Matches,420c18a1
+41,Marco Sportiello,it ITA,GK,Atalanta,33,1992,1,1,90,1.0,1,1.00,4,3,75.0,0,1,0,0,0.0,0,0,0,0,,Matches,ac4003af
+42,Zion Suzuki,jp JPN,GK,Parma,22,2002,20,20,1800,20.0,28,1.40,93,65,69.9,3,7,10,5,25.0,3,2,1,0,33.3,Matches,51e1f4f5
+43,Mile Svilar,rs SRB,GK,Roma,25,1999,38,38,3420,38.0,31,0.82,138,107,77.5,23,4,11,18,47.4,1,1,0,0,0.0,Matches,bcf5058a
+44,Pietro Terracciano,it ITA,GK,Milan,35,1990,2,1,125,1.4,0,0.00,4,4,100.0,1,0,0,2,200.0,0,0,0,0,,Matches,e1b0a70d
+45,Stefano Turati,it ITA,GK,Sassuolo,23,2001,6,6,532,5.9,7,1.18,22,15,68.2,2,1,3,2,33.3,0,0,0,0,,Matches,bf168004
+46,Gioele Zacchi,it ITA,GK,Sassuolo,22,2003,1,0,8,0.1,0,0.00,0,0,,0,0,0,0,,0,0,0,0,,Matches,8aa135ca
+
+
+Provided by <a href="https://www.sports-reference.com/sharing.html?utm_source=direct&utm_medium=Share&utm_campaign=ShareTool">FBref.com</a>: <a href="https://fbref.com/en/comps/11/2025-2026/keepers/2025-2026-Serie-A-M-Stats?sr&utm_source=direct&utm_medium=Share&utm_campaign=ShareTool#stats_keeper">View Original Table</a><br>Generated 8/25/2026.

@@ -1,0 +1,58 @@
+--- When using SR data, please cite us and provide a link and/or a mention.
+
+
+ 
+,,,,,,,Playing Time,,,,Performance,,,,,,,,,,Penalty Kicks,,,,,,-additional
+Rk,Player,Nation,Pos,Squad,Age,Born,MP,Starts,Min,90s,GA,GA90,SoTA,Saves,Save%,W,D,L,CS,CS%,PKatt,PKA,PKsv,PKm,Save%,Matches,-9999
+1,Emil Audero,id IDN,GK,Sampdoria,25,1997,25,25,2250,25.0,39,1.56,121,82,67.8,2,6,17,4,16.0,7,5,2,0,28.6,Matches,649b01d8
+2,Francesco Bardi,it ITA,GK,Bologna,30,1992,1,1,90,1.0,0,0.00,4,4,100.0,1,0,0,1,100.0,0,0,0,0,,Matches,0acda699
+3,Marco Carnesecchi,it ITA,GK,Cremonese,22,2000,27,27,2430,27.0,47,1.74,154,107,69.5,4,9,14,4,14.8,2,2,0,0,0.0,Matches,8ec56e62
+4,Michele Cerofolini,it ITA,GK,Fiorentina,23,1999,5,5,450,5.0,3,0.60,11,8,72.7,4,1,0,2,40.0,1,1,0,0,0.0,Matches,efdeaff3
+5,Andrea Consigli,it ITA,GK,Sassuolo,35,1987,35,35,3150,35.0,55,1.57,119,64,53.8,12,8,15,9,25.7,3,3,0,0,0.0,Matches,8cabdc1e
+6,Alex Cordaz,it ITA,GK,Inter,39,1983,1,0,26,0.3,0,0.00,2,2,100.0,0,0,0,1,,0,0,0,0,,Matches,e66ebabb
+7,Alessio Cragno,it ITA,GK,Monza,28,1994,1,1,90,1.0,3,3.00,5,2,40.0,0,0,1,0,0.0,0,0,0,0,,Matches,f554e29b
+8,Michele Di Gregorio,it ITA,GK,Monza,25,1997,37,37,3330,37.0,49,1.32,169,120,71.0,14,10,13,10,27.0,3,3,0,0,0.0,Matches,4e0c8d66
+9,Bartłomiej Drągowski,pl POL,GK,Spezia,24,1997,34,34,2946,32.7,54,1.65,168,114,67.9,6,10,18,6,17.6,6,4,1,1,20.0,Matches,085e71a7
+10,Wladimiro Falcone,it ITA,GK,Lecce,27,1995,38,38,3420,38.0,46,1.21,153,112,69.9,8,12,18,6,15.8,6,5,1,0,16.7,Matches,9f5a610b
+11,Vincenzo Fiorillo,it ITA,GK,Salernitana,32,1990,1,1,90,1.0,2,2.00,4,2,50.0,1,0,0,0,0.0,0,0,0,0,,Matches,a2565f79
+12,Pierluigi Gollini,it ITA,GK,Napoli,27,1995,4,4,360,4.0,4,1.00,16,12,75.0,2,1,1,2,50.0,0,0,0,0,,Matches,f0f7f62f
+13,Pierluigi Gollini,it ITA,GK,Fiorentina,27,1995,3,3,270,3.0,2,0.67,8,6,75.0,1,2,0,2,66.7,0,0,0,0,,Matches,f0f7f62f
+14,Samir Handanović,si SVN,GK,Inter,38,1984,14,14,1234,13.7,18,1.31,53,35,66.0,9,0,5,5,35.7,1,1,0,0,0.0,Matches,74419746
+15,Mike Maignan,fr FRA,GK,Milan,27,1995,22,22,1978,22.0,21,0.96,59,40,64.4,11,7,4,8,36.4,3,2,1,0,33.3,Matches,fcb38f57
+16,Federico Marchetti,it ITA,GK,Spezia,39,1983,1,0,66,0.7,2,2.73,3,1,33.3,0,0,0,0,,0,0,0,0,,Matches,f794b426
+17,Luís Maximiano,pt POR,GK,Lazio,23,1999,1,1,5,0.1,0,0.00,0,0,,1,0,0,0,0.0,0,0,0,0,,Matches,3318286e
+18,Alex Meret,it ITA,GK,Napoli,25,1997,34,34,3060,34.0,24,0.71,90,67,73.3,26,5,3,16,47.1,2,1,1,0,50.0,Matches,9413b19f
+19,Vanja Milinković-Savić,rs SRB,GK,Torino,25,1997,38,38,3420,38.0,41,1.08,137,96,70.1,14,11,13,11,28.9,6,5,0,1,0.0,Matches,9fa26bc2
+20,Antonio Mirante,it ITA,GK,Milan,39,1983,1,0,2,0.0,0,0.00,0,0,,0,0,0,0,,0,0,0,0,,Matches,30223b33
+21,Lorenzo Montipò,it ITA,GK,Hellas Verona,26,1996,37,37,3330,37.0,59,1.59,184,125,67.9,7,9,21,5,13.5,2,1,1,0,50.0,Matches,c1d95617
+22,Juan Musso,ar ARG,GK,Atalanta,28,1994,24,24,2077,23.1,27,1.17,91,64,70.3,13,4,7,8,33.3,2,2,0,0,0.0,Matches,a111cf41
+23,Guillermo Ochoa,mx MEX,GK,Salernitana,37,1985,20,20,1800,20.0,33,1.65,103,70,68.0,4,10,6,4,20.0,4,3,1,0,25.0,Matches,1e9bde92
+24,André Onana,cm CMR,GK,Inter,26,1996,24,24,2160,24.0,24,1.00,84,61,71.4,14,3,7,8,33.3,2,2,0,0,0.0,Matches,e9c0c1b2
+25,Rui Patrício,pt POR,GK,Roma,34,1988,35,35,3150,35.0,35,1.00,108,73,67.6,17,8,10,13,37.1,3,2,1,0,33.3,Matches,79b0d6a0
+26,Gianluca Pegolo,it ITA,GK,Sassuolo,41,1981,2,2,180,2.0,3,1.50,6,3,50.0,0,1,1,0,0.0,1,1,0,0,0.0,Matches,f058ed1f
+27,Simone Perilli,it ITA,GK,Hellas Verona,27,1995,1,1,90,1.0,0,0.00,4,4,100.0,0,1,0,1,100.0,0,0,0,0,,Matches,b9e11c1d
+28,Mattia Perin,it ITA,GK,Juventus,29,1992,11,10,948,10.5,7,0.66,39,32,82.1,5,3,2,6,60.0,2,1,1,0,50.0,Matches,4c62d0c8
+29,Samuele Perisan,it ITA,GK,Empoli,24,1997,7,7,630,7.0,9,1.29,24,15,62.5,1,1,5,2,28.6,0,0,0,0,,Matches,00a17eba
+30,Ivan Provedel,it ITA,GK,Lazio,28,1994,38,37,3413,37.9,30,0.79,129,99,76.7,21,8,8,21,56.8,2,1,0,1,0.0,Matches,277da414
+31,Ionuț Radu,ro ROU,GK,Cremonese,25,1997,9,9,810,9.0,19,2.11,64,45,70.3,0,3,6,1,11.1,3,3,0,0,0.0,Matches,67f649be
+32,Nicola Ravaglia,it ITA,GK,Sampdoria,33,1988,9,9,810,9.0,23,2.56,64,41,64.1,0,3,6,0,0.0,2,2,0,0,0.0,Matches,d7a35008
+33,Francesco Rossi,it ITA,GK,Atalanta,31,1991,1,0,4,0.0,0,0.00,0,0,,0,0,0,0,,0,0,0,0,,Matches,7b5f516f
+34,Alessandro Russo,it ITA,GK,Sassuolo,21,2001,1,1,90,1.0,3,3.00,7,4,57.1,0,0,1,0,0.0,0,0,0,0,,Matches,3945ac70
+35,Mouhamadou Sarr,sn SEN,GK,Cremonese,25,1997,2,2,180,2.0,3,1.50,8,5,62.5,1,0,1,1,50.0,0,0,0,0,,Matches,b959a0d1
+36,Luigi Sepe,it ITA,GK,Salernitana,31,1991,17,17,1530,17.0,27,1.59,84,57,67.9,4,5,8,3,17.6,7,4,3,0,42.9,Matches,343f753a
+37,Marco Silvestri,it ITA,GK,Udinese,31,1991,38,38,3420,38.0,48,1.26,137,89,65.0,11,13,14,10,26.3,7,6,0,1,0.0,Matches,0d422df7
+38,Salvatore Sirigu,it ITA,GK,Fiorentina,35,1987,1,1,90,1.0,0,0.00,5,5,100.0,1,0,0,1,100.0,0,0,0,0,,Matches,10dc46f0
+39,Łukasz Skorupski,pl POL,GK,Bologna,31,1991,37,37,3330,37.0,49,1.32,154,113,68.2,13,12,12,7,18.9,9,7,2,0,22.2,Matches,ab4449d6
+40,Marco Sportiello,it ITA,GK,Atalanta,30,1992,15,14,1339,14.9,21,1.41,64,43,67.2,6,3,5,2,14.3,1,1,0,0,0.0,Matches,ac4003af
+41,Mile Svilar,rs SRB,GK,Roma,22,1999,3,3,270,3.0,3,1.00,10,7,70.0,1,1,1,1,33.3,0,0,0,0,,Matches,bcf5058a
+42,Wojciech Szczęsny,pl POL,GK,Juventus,32,1990,28,28,2472,27.5,26,0.95,91,67,71.4,17,3,8,15,53.6,3,3,0,0,0.0,Matches,01b8a2b2
+43,Ciprian Tătărușanu,ro ROU,GK,Milan,36,1986,16,16,1440,16.0,22,1.37,63,41,65.1,9,3,4,4,25.0,2,2,0,0,0.0,Matches,b056e3da
+44,Pietro Terracciano,it ITA,GK,Fiorentina,32,1990,29,29,2610,29.0,38,1.31,91,59,58.2,9,8,12,5,17.2,7,6,1,0,14.3,Matches,e1b0a70d
+45,Martin Turk,si SVN,GK,Sampdoria,18,2003,4,4,360,4.0,9,2.25,30,21,70.0,1,1,2,0,0.0,2,1,0,1,0.0,Matches,14ae023f
+46,Samir Ujkani,xk KVX,GK,Empoli,34,1988,1,0,7,0.1,1,12.86,1,0,0.0,0,0,0,0,,0,0,0,0,,Matches,96640846
+47,Guglielmo Vicario,it ITA,GK,Empoli,25,1996,31,31,2783,30.9,39,1.26,135,96,71.1,9,12,10,7,22.6,6,4,1,1,20.0,Matches,77d6fd4d
+48,Jeroen Zoet,nl NED,GK,Spezia,31,1991,5,4,334,3.7,4,1.08,14,10,71.4,0,3,1,0,0.0,1,1,0,0,0.0,Matches,cc1a0c57
+49,Petar Zovko,ba BIH,GK,Spezia,20,2002,1,0,74,0.8,2,2.43,3,1,33.3,0,0,0,0,,0,0,0,0,,Matches,54f6afe3
+
+
+Provided by <a href="https://www.sports-reference.com/sharing.html?utm_source=direct&utm_medium=Share&utm_campaign=ShareTool">FBref.com</a>: <a href="https://fbref.com/en/comps/11/2022-2023/keepers/2022-2023-Serie-A-M-Stats?sr&utm_source=direct&utm_medium=Share&utm_campaign=ShareTool#stats_keeper">View Original Table</a><br>Generated 8/25/2026.

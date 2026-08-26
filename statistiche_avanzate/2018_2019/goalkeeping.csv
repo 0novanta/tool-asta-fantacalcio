@@ -1,0 +1,56 @@
+--- When using SR data, please cite us and provide a link and/or a mention.
+
+
+ 
+,,,,,,,Playing Time,,,,Performance,,,,,,,,,,Penalty Kicks,,,,,,-additional
+Rk,Player,Nation,Pos,Squad,Age,Born,MP,Starts,Min,90s,GA,GA90,SoTA,Saves,Save%,W,D,L,CS,CS%,PKatt,PKA,PKsv,PKm,Save%,Matches,-9999
+1,Emil Audero,id IDN,GK,Sampdoria,21,1997,36,36,3240,36.0,51,1.42,147,96,65.3,14,7,15,11,30.6,8,7,1,0,12.5,Matches,649b01d8
+2,Francesco Bardi,it ITA,GK,Frosinone,26,1992,3,3,270,3.0,5,1.67,12,7,58.3,0,1,2,1,33.3,0,0,0,0,,Matches,0acda699
+3,Etrit Berisha,al ALB,GK,Atalanta,29,1989,18,18,1620,18.0,25,1.39,67,42,62.7,9,3,6,5,27.8,2,1,0,1,0.0,Matches,ee833569
+4,Rafael Cabral,br BRA,GK,Sampdoria,28,1990,2,2,180,2.0,0,0.00,3,2,100.0,1,1,0,2,100.0,0,0,0,0,,Matches,806f7a26
+5,Andrea Consigli,it ITA,GK,Sassuolo,31,1987,36,36,3213,35.7,56,1.57,149,98,62.4,9,15,12,12,33.3,8,4,3,1,42.9,Matches,8cabdc1e
+6,Alessio Cragno,it ITA,GK,Cagliari,24,1994,38,38,3420,38.0,54,1.42,207,153,73.9,10,11,17,7,18.4,10,8,2,0,20.0,Matches,f554e29b
+7,Gianluigi Donnarumma,it ITA,GK,Milan,19,1999,36,36,3092,34.3,31,0.90,126,98,75.4,18,11,7,11,30.6,4,3,1,0,25.0,Matches,08f5afaa
+8,Bartłomiej Drągowski,pl POL,GK,Empoli,20,1997,14,14,1260,14.0,24,1.71,95,71,74.7,5,2,7,3,21.4,4,3,1,0,25.0,Matches,085e71a7
+9,Bartłomiej Drągowski,pl POL,GK,Fiorentina,20,1997,3,2,225,2.5,2,0.80,8,6,75.0,0,1,1,1,50.0,0,0,0,0,,Matches,085e71a7
+10,Pierluigi Frattali,it ITA,GK,Parma,32,1985,1,1,90,1.0,2,2.00,9,7,77.8,0,0,1,0,0.0,0,0,0,0,,Matches,71dac2c2
+11,Pierluigi Gollini,it ITA,GK,Atalanta,23,1995,20,20,1800,20.0,21,1.05,70,49,70.0,11,6,3,4,20.0,3,3,0,0,0.0,Matches,f0f7f62f
+12,Alfred Gomis,sn SEN,GK,SPAL,24,1993,20,19,1723,19.2,27,1.41,76,49,64.5,3,6,10,6,31.6,1,1,0,0,0.0,Matches,cecbce23
+13,Guido Guerrieri,it ITA,GK,Lazio,22,1996,1,1,90,1.0,3,3.00,4,1,25.0,0,1,0,0,0.0,0,0,0,0,,Matches,77e401c7
+14,Samir Handanović,si SVN,GK,Inter,34,1984,38,38,3420,38.0,33,0.87,130,98,74.6,20,9,9,17,44.7,5,3,0,2,0.0,Matches,74419746
+15,Salvador Ichazo,uy URU,GK,Torino,26,1992,3,2,250,2.8,2,0.72,10,8,80.0,1,1,0,1,50.0,1,1,0,0,0.0,Matches,514f0896
+16,Jandrei,br BRA,GK,Genoa,25,1993,1,1,90,1.0,1,1.00,3,2,66.7,0,0,1,0,0.0,0,0,0,0,,Matches,85ea4399
+17,Orestis Karnezis,gr GRE,GK,Napoli,33,1985,9,9,810,9.0,7,0.78,28,21,75.0,6,2,1,4,44.4,1,1,0,0,0.0,Matches,85b011bb
+18,Alban Lafont,ci CIV,GK,Fiorentina,19,1999,34,34,3015,33.5,40,1.19,130,90,69.2,8,15,11,9,26.5,6,5,1,0,16.7,Matches,4e7db402
+19,Federico Marchetti,it ITA,GK,Genoa,35,1983,4,4,360,4.0,10,2.50,19,9,47.4,2,0,2,1,25.0,0,0,0,0,,Matches,f794b426
+20,Alex Meret,it ITA,GK,Napoli,21,1997,14,13,1150,12.8,9,0.70,48,39,81.3,9,1,3,5,38.5,2,2,0,0,0.0,Matches,9413b19f
+21,Vanja Milinković-Savić,rs SRB,GK,SPAL,21,1997,2,2,164,1.8,4,2.20,16,12,75.0,1,0,1,1,50.0,0,0,0,0,,Matches,9fa26bc2
+22,Antonio Mirante,it ITA,GK,Roma,35,1983,11,11,990,11.0,6,0.55,37,31,83.8,6,4,1,6,54.5,1,0,1,0,100.0,Matches,30223b33
+23,Juan Musso,ar ARG,GK,Udinese,24,1994,29,29,2610,29.0,40,1.38,141,108,71.6,9,8,12,7,24.1,8,8,0,0,0.0,Matches,a111cf41
+24,Robin Olsen,se SWE,GK,Roma,28,1990,27,27,2430,27.0,42,1.56,125,86,66.4,12,8,7,4,14.8,6,4,0,2,0.0,Matches,e7ee38c3
+25,David Ospina,co COL,GK,Napoli,29,1988,17,16,1457,16.2,20,1.24,63,43,68.3,9,4,3,5,31.3,1,1,0,0,0.0,Matches,82b1198a
+26,Gianluca Pegolo,it ITA,GK,Sassuolo,37,1981,3,2,202,2.3,4,1.78,13,9,69.2,0,1,1,0,0.0,0,0,0,0,,Matches,f058ed1f
+27,Mattia Perin,it ITA,GK,Juventus,25,1992,9,9,810,9.0,8,0.89,28,20,71.4,6,1,2,5,55.6,1,1,0,0,0.0,Matches,4c62d0c8
+28,Carlo Pinsoglio,it ITA,GK,Juventus,28,1990,1,1,90,1.0,2,2.00,3,1,33.3,0,0,1,0,0.0,0,0,0,0,,Matches,f6a06749
+29,Giacomo Poluzzi,it ITA,GK,SPAL,30,1988,1,0,5,0.1,0,0.00,0,0,,0,0,0,1,,0,0,0,0,,Matches,07f55871
+30,Silvio Proto,be BEL,GK,Lazio,35,1983,2,2,180,2.0,4,2.00,13,9,69.2,1,0,1,0,0.0,0,0,0,0,,Matches,c8a88acd
+31,Ivan Provedel,it ITA,GK,Empoli,24,1994,16,16,1440,16.0,36,2.25,104,68,65.4,4,4,8,0,0.0,4,3,0,1,0.0,Matches,277da414
+32,Ionuț Radu,ro ROU,GK,Genoa,21,1997,33,33,2970,33.0,46,1.39,145,104,68.3,6,14,13,6,18.2,6,5,1,0,16.7,Matches,67f649be
+33,Pepe Reina,es ESP,GK,Milan,35,1982,4,2,328,3.7,5,1.37,14,9,64.3,1,0,1,1,50.0,1,1,0,0,0.0,Matches,e358587b
+34,Francesco Rossi,it ITA,GK,Atalanta,27,1991,1,0,,0.0,0,,0,0,,0,0,0,0,,0,0,0,0,,Matches,7b5f516f
+35,Simone Scuffet,it ITA,GK,Udinese,22,1996,9,9,810,9.0,13,1.44,39,26,66.7,2,2,5,2,22.2,1,1,0,0,0.0,Matches,41bd99ea
+36,Andrea Seculin,it ITA,GK,Chievo,28,1990,2,1,90,1.0,6,6.00,11,5,45.5,0,0,1,0,0.0,0,0,0,0,,Matches,c4f573f4
+37,Adrian Šemper,hr CRO,GK,Chievo,20,1998,6,6,540,6.0,8,1.33,34,26,76.5,1,3,2,2,33.3,0,0,0,0,,Matches,f02dde20
+38,Luigi Sepe,it ITA,GK,Parma,27,1991,37,37,3330,37.0,59,1.59,194,142,69.6,10,11,16,10,27.0,8,8,0,0,0.0,Matches,343f753a
+39,Salvatore Sirigu,it ITA,GK,Torino,31,1987,36,36,3170,35.2,35,0.99,132,100,73.5,15,14,7,14,38.9,4,2,2,0,50.0,Matches,10dc46f0
+40,Łukasz Skorupski,pl POL,GK,Bologna,27,1991,38,38,3420,38.0,56,1.47,176,120,68.2,11,11,16,10,26.3,4,4,0,0,0.0,Matches,ab4449d6
+41,Stefano Sorrentino,it ITA,GK,Chievo,39,1979,31,31,2790,31.0,61,1.97,166,108,63.3,1,11,19,5,16.1,4,2,2,0,50.0,Matches,048877f5
+42,Marco Sportiello,it ITA,GK,Frosinone,26,1992,35,35,3150,35.0,64,1.83,206,142,68.9,5,9,21,8,22.9,5,5,0,0,0.0,Matches,ac4003af
+43,Thomas Strakosha,al ALB,GK,Lazio,23,1995,35,35,3150,35.0,39,1.11,138,99,71.7,16,7,12,10,28.6,7,5,2,0,28.6,Matches,339fe0e8
+44,Wojciech Szczęsny,pl POL,GK,Juventus,28,1990,28,28,2520,28.0,20,0.71,83,63,75.9,22,5,1,11,39.3,3,1,1,1,50.0,Matches,01b8a2b2
+45,Pietro Terracciano,it ITA,GK,Fiorentina,28,1990,2,2,180,2.0,3,1.50,11,8,72.7,0,1,1,0,0.0,0,0,0,0,,Matches,e1b0a70d
+46,Pietro Terracciano,it ITA,GK,Empoli,28,1990,8,8,720,8.0,10,1.25,36,26,72.2,1,2,5,2,25.0,0,0,0,0,,Matches,e1b0a70d
+47,Emiliano Viviano,it ITA,GK,SPAL,32,1985,17,17,1525,16.9,25,1.48,85,60,70.6,7,3,7,4,23.5,4,4,0,0,0.0,Matches,03760df0
+
+
+Provided by <a href="https://www.sports-reference.com/sharing.html?utm_source=direct&utm_medium=Share&utm_campaign=ShareTool">FBref.com</a>: <a href="https://fbref.com/en/comps/11/2018-2019/keepers/2018-2019-Serie-A-M-Stats?sr&utm_source=direct&utm_medium=Share&utm_campaign=ShareTool#stats_keeper">View Original Table</a><br>Generated 8/25/2026.

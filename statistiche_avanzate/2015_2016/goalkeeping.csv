@@ -1,0 +1,58 @@
+--- When using SR data, please cite us and provide a link and/or a mention.
+
+
+ 
+,,,,,,,Playing Time,,,,Performance,,,,,,,,,,Penalty Kicks,,,,,,-additional
+Rk,Player,Nation,Pos,Squad,Age,Born,MP,Starts,Min,90s,GA,GA90,SoTA,Saves,Save%,W,D,L,CS,CS%,PKatt,PKA,PKsv,PKm,Save%,Matches,-9999
+1,Christian Abbiati,it ITA,GK,Milan,38,1977,1,0,72,0.8,0,0.00,5,5,100.0,0,1,0,1,,,,,,,Matches,322421c2
+2,Fabrizio Alastra,it ITA,GK,Palermo,17,1997,2,1,144,1.6,6,3.75,12,6,50.0,0,0,2,0,0.0,,,,,,Matches,cfed4243
+3,Ionuț Andrei Radu,ro ROU,GK,Inter,,,1,0,19,0.2,0,0.00,0,0,,0,0,0,0,,,,,,,Matches,29d80748
+4,Francesco Bardi,it ITA,GK,Frosinone,23,1992,2,2,119,1.3,3,2.27,12,9,75.0,0,1,0,0,0.0,,,,,,Matches,0acda699
+5,Davide Bassi,it ITA,GK,Atalanta,30,1985,1,1,90,1.0,3,3.00,5,2,40.0,0,0,1,0,0.0,,,,,,Matches,b260a8e3
+6,Vid Belec,si SVN,GK,Carpi,25,1990,30,30,2700,30.0,41,1.37,124,83,66.9,8,8,14,6,20.0,,,,,,Matches,4f8ce0e1
+7,Francesco Benussi,it ITA,GK,Carpi,33,1981,4,4,298,3.3,3,0.91,11,8,72.7,0,2,1,1,25.0,,,,,,Matches,42bcb825
+8,Etrit Berisha,al ALB,GK,Lazio,26,1989,11,9,873,9.7,13,1.34,43,30,69.8,5,3,2,2,22.2,,,,,,Matches,ee833569
+9,Albano Bizzarri,ar ARG,GK,Chievo,37,1977,35,35,3150,35.0,43,1.23,160,117,73.1,12,10,13,11,31.4,,,,,,Matches,32b9b5fa
+10,Alberto Brignoli,it ITA,GK,Sampdoria,23,1991,1,1,90,1.0,5,5.00,12,7,58.3,0,0,1,0,0.0,,,,,,Matches,6989550f
+11,Željko Brkić,rs SRB,GK,Carpi,29,1986,4,3,332,3.7,12,3.25,25,13,52.0,0,1,3,0,0.0,,,,,,Matches,5b8e51a8
+12,Gianluigi Buffon,it ITA,GK,Juventus,37,1978,35,35,3150,35.0,17,0.49,88,71,80.7,28,3,4,21,60.0,,,,,,Matches,e40d028b
+13,Simone Colombi,it ITA,GK,Palermo,24,1991,1,1,90,1.0,1,1.00,4,3,75.0,1,0,0,0,0.0,,,,,,Matches,72be9309
+14,Simone Colombi,it ITA,GK,Carpi,24,1991,1,1,90,1.0,1,1.00,5,4,80.0,0,0,1,0,0.0,,,,,,Matches,72be9309
+15,Andrea Consigli,it ITA,GK,Sassuolo,28,1987,37,37,3270,36.3,38,1.05,134,96,71.6,15,13,8,10,27.0,,,,,,Matches,8cabdc1e
+16,Ferdinando Coppola,it ITA,GK,Hellas Verona,37,1978,1,1,90,1.0,1,1.00,2,1,50.0,0,1,0,0,0.0,,,,,,Matches,7feaf90b
+17,Angelo da Costa Júnior,br BRA,GK,Bologna,31,1983,5,5,450,5.0,4,0.80,17,13,76.5,2,1,2,1,20.0,,,,,,Matches,18736214
+18,Morgan De Sanctis,it ITA,GK,Roma,38,1977,4,4,360,4.0,7,1.75,17,10,58.8,1,1,2,0,0.0,,,,,,Matches,83228343
+19,Gianluigi Donnarumma,it ITA,GK,Milan,16,1999,30,30,2628,29.2,29,0.99,107,78,72.9,12,9,7,10,33.3,,,,,,Matches,08f5afaa
+20,Gabriel,br BRA,GK,Napoli,22,1992,1,1,90,1.0,5,5.00,12,7,58.3,0,0,1,0,0.0,,,,,,Matches,f93ed0df
+21,Pierluigi Gollini,it ITA,GK,Hellas Verona,20,1995,26,25,2320,25.8,44,1.71,113,69,61.1,5,7,14,2,8.0,,,,,,Matches,f0f7f62f
+22,Samir Handanović,si SVN,GK,Inter,31,1984,36,36,3240,36.0,34,0.94,146,112,76.7,19,7,10,15,41.7,,,,,,Matches,74419746
+23,Salvador Ichazo,uy URU,GK,Torino,23,1992,3,3,270,3.0,5,1.67,11,6,54.5,1,1,1,0,0.0,,,,,,Matches,514f0896
+24,Orestis Karnezis,gr GRE,GK,Udinese,30,1985,38,38,3420,38.0,60,1.58,169,109,64.5,10,9,19,8,21.1,,,,,,Matches,85b011bb
+25,Eugenio Lamanna,it ITA,GK,Genoa,25,1989,13,13,1170,13.0,18,1.38,57,39,68.4,4,1,8,4,30.8,,,,,,Matches,349601c3
+26,Nicola Leali,it ITA,GK,Frosinone,22,1993,33,33,2970,33.0,59,1.79,178,119,66.9,8,6,19,7,21.2,,,,,,Matches,5f9970a0
+27,Luca Lezzerini,it ITA,GK,Fiorentina,20,1995,2,1,110,1.2,3,2.45,7,4,57.1,1,0,0,0,0.0,,,,,,Matches,c9c32262
+28,Diego López,es ESP,GK,Milan,33,1981,8,8,720,8.0,14,1.75,30,16,53.3,3,1,4,0,0.0,,,,,,Matches,73683fa9
+29,Federico Marchetti,it ITA,GK,Lazio,32,1983,29,29,2547,28.3,39,1.38,112,73,65.2,10,6,12,9,31.0,,,,,,Matches,f794b426
+30,Antonio Mirante,it ITA,GK,Bologna,32,1983,33,33,2970,33.0,41,1.24,136,95,69.9,9,8,16,12,36.4,,,,,,Matches,30223b33
+31,Neto,br BRA,GK,Juventus,26,1989,3,3,270,3.0,3,1.00,6,3,50.0,1,1,1,1,33.3,,,,,,Matches,a9dc785c
+32,Juan Pablo Carrizo,ar ARG,GK,Inter,31,1984,2,2,161,1.8,4,2.24,7,3,42.9,1,0,1,0,0.0,,,,,,Matches,04e6e152
+33,Daniele Padelli,it ITA,GK,Torino,29,1985,35,35,3150,35.0,50,1.43,137,87,63.5,11,8,16,6,17.1,,,,,,Matches,cf1c23d8
+34,Gianluca Pegolo,it ITA,GK,Sassuolo,34,1981,2,1,150,1.7,2,1.20,6,4,66.7,1,0,1,1,100.0,,,,,,Matches,f058ed1f
+35,Alberto Pelagotti,it ITA,GK,Empoli,25,1989,6,6,540,6.0,5,0.83,32,27,84.4,2,1,3,3,50.0,,,,,,Matches,3101c3ce
+36,Mattia Perin,it ITA,GK,Genoa,22,1992,25,25,2250,25.0,30,1.20,113,83,73.5,9,6,10,8,32.0,,,,,,Matches,4c62d0c8
+37,Josip Posavec,hr CRO,GK,Palermo,19,1996,1,1,90,1.0,0,0.00,5,5,100.0,0,1,0,1,100.0,,,,,,Matches,72624a76
+38,Maurizio Pugliesi,it ITA,GK,Empoli,38,1976,1,1,90,1.0,1,1.00,5,4,80.0,0,1,0,0,0.0,,,,,,Matches,09f1423a
+39,Boris Radunović,rs SRB,GK,Atalanta,19,1996,1,1,90,1.0,1,1.00,2,1,50.0,1,0,0,0,0.0,,,,,,Matches,0dfce079
+40,Rafael,br BRA,GK,Hellas Verona,33,1982,12,12,1010,11.2,18,1.60,46,28,60.9,0,5,6,1,8.3,,,,,,Matches,dd06d56c
+41,Pepe Reina,es ESP,GK,Napoli,32,1982,37,37,3330,37.0,29,0.78,82,53,64.6,25,7,5,15,40.5,,,,,,Matches,e358587b
+42,Andrea Seculin,it ITA,GK,Chievo,25,1990,3,3,270,3.0,2,0.67,15,13,86.7,1,1,1,0,0.0,,,,,,Matches,c4f573f4
+43,Łukasz Skorupski,pl POL,GK,Empoli,24,1991,31,31,2790,31.0,43,1.39,127,84,66.1,9,9,13,9,29.0,,,,,,Matches,ab4449d6
+44,Stefano Sorrentino,it ITA,GK,Palermo,36,1979,35,35,3096,34.4,58,1.69,178,120,67.4,10,8,16,9,25.7,,,,,,Matches,048877f5
+45,Marco Sportiello,it ITA,GK,Atalanta,23,1992,36,36,3240,36.0,43,1.19,144,101,70.1,10,12,14,11,30.6,,,,,,Matches,ac4003af
+46,Wojciech Szczęsny,pl POL,GK,Roma,25,1990,34,34,3060,34.0,34,1.00,130,96,73.8,22,10,2,8,23.5,,,,,,Matches,01b8a2b2
+47,Ciprian Tătărușanu,ro ROU,GK,Fiorentina,29,1986,37,37,3310,36.8,39,1.06,104,65,62.5,17,10,10,14,37.8,,,,,,Matches,b056e3da
+48,Emiliano Viviano,it ITA,GK,Sampdoria,29,1985,37,37,3330,37.0,56,1.51,194,138,71.1,10,10,17,7,18.9,,,,,,Matches,03760df0
+49,Massimo Zappino,br BRA,GK,Frosinone,34,1981,4,3,331,3.7,14,3.81,33,19,57.6,0,0,4,0,0.0,,,,,,Matches,03d5e282
+
+
+Provided by <a href="https://www.sports-reference.com/sharing.html?utm_source=direct&utm_medium=Share&utm_campaign=ShareTool">FBref.com</a>: <a href="https://fbref.com/en/comps/11/2015-2016/keepers/2015-2016-Serie-A-M-Stats?sr&utm_source=direct&utm_medium=Share&utm_campaign=ShareTool#stats_keeper">View Original Table</a><br>Generated 8/25/2026.

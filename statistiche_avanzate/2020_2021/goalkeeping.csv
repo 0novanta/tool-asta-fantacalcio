@@ -1,0 +1,60 @@
+--- When using SR data, please cite us and provide a link and/or a mention.
+
+
+ 
+,,,,,,,Playing Time,,,,Performance,,,,,,,,,,Penalty Kicks,,,,,,-additional
+Rk,Player,Nation,Pos,Squad,Age,Born,MP,Starts,Min,90s,GA,GA90,SoTA,Saves,Save%,W,D,L,CS,CS%,PKatt,PKA,PKsv,PKm,Save%,Matches,-9999
+1,Nícolas Andrade,br BRA,GK,Udinese,32,1988,2,2,180,2.0,5,2.50,6,1,16.7,1,0,1,0,0.0,0,0,0,0,,Matches,326d09ef
+2,Emil Audero,id IDN,GK,Sampdoria,23,1997,37,37,3330,37.0,54,1.46,174,120,69.0,14,7,16,6,16.2,9,7,2,0,22.2,Matches,649b01d8
+3,Alessandro Berardi,it ITA,GK,Hellas Verona,29,1991,1,0,28,0.3,0,0.00,1,1,100.0,0,0,0,0,,0,0,0,0,,Matches,ec1f737d
+4,Gianluigi Buffon,it ITA,GK,Juventus,42,1978,8,8,720,8.0,5,0.62,20,15,75.0,7,1,0,3,37.5,3,2,1,0,33.3,Matches,e40d028b
+5,Simone Colombi,it ITA,GK,Parma,29,1991,2,2,180,2.0,7,3.50,10,3,30.0,0,0,2,0,0.0,1,1,0,0,0.0,Matches,72be9309
+6,Andrea Consigli,it ITA,GK,Sassuolo,33,1987,37,37,3330,37.0,56,1.51,186,130,69.9,17,10,10,7,18.9,5,4,1,0,20.0,Matches,8cabdc1e
+7,Alex Cordaz,it ITA,GK,Crotone,37,1983,36,36,3240,36.0,91,2.53,209,118,56.5,6,3,27,2,5.6,5,5,0,0,0.0,Matches,e66ebabb
+8,Angelo da Costa Júnior,br BRA,GK,Bologna,36,1983,6,6,540,6.0,9,1.50,27,18,66.7,0,5,1,1,16.7,1,1,0,0,0.0,Matches,18736214
+9,Alessio Cragno,it ITA,GK,Cagliari,26,1994,34,34,3060,34.0,53,1.56,185,132,71.4,6,10,18,6,17.6,5,5,0,0,0.0,Matches,f554e29b
+10,Gian Crespi,it ITA,GK,Crotone,19,2001,1,1,90,1.0,0,0.00,1,1,100.0,0,1,0,1,100.0,0,0,0,0,,Matches,4dea2f2c
+11,Gianluigi Donnarumma,it ITA,GK,Milan,21,1999,37,37,3330,37.0,38,1.03,128,92,70.3,24,6,7,14,37.8,4,2,1,1,33.3,Matches,08f5afaa
+12,Bartłomiej Drągowski,pl POL,GK,Fiorentina,22,1997,36,36,3148,35.0,55,1.57,140,85,60.7,9,12,15,8,22.2,10,8,2,0,20.0,Matches,085e71a7
+13,Marco Festa,it ITA,GK,Crotone,28,1992,1,1,90,1.0,1,1.00,8,7,87.5,0,1,0,0,0.0,0,0,0,0,,Matches,c195ae4a
+14,Daniel Fuzato,br BRA,GK,Roma,23,1997,5,5,450,5.0,7,1.40,26,19,73.1,2,1,2,2,40.0,0,0,0,0,,Matches,82328faf
+15,Manuel Gasparini,it ITA,GK,Udinese,18,2002,1,0,3,0.0,0,0.00,0,0,,0,0,0,0,,0,0,0,0,,Matches,7033ca08
+16,Pierluigi Gollini,it ITA,GK,Atalanta,25,1995,25,25,2156,24.0,26,1.09,65,39,60.0,14,8,3,9,36.0,6,4,2,0,33.3,Matches,f0f7f62f
+17,Samir Handanović,si SVN,GK,Inter,36,1984,37,37,3240,36.0,33,0.92,110,77,70.0,27,7,3,14,37.8,6,4,2,0,33.3,Matches,74419746
+18,Karlo Letica,hr CRO,GK,Sampdoria,23,1997,1,1,90,1.0,0,0.00,1,1,100.0,1,0,0,1,100.0,0,0,0,0,,Matches,4a6914ff
+19,Pau López,es ESP,GK,Roma,25,1994,21,20,1817,20.2,29,1.44,88,59,67.0,10,4,6,4,20.0,3,3,0,0,0.0,Matches,20b9f052
+20,Niccolò Manfredini,it ITA,GK,Benevento,32,1988,1,1,90,1.0,1,1.00,5,4,80.0,0,1,0,0,0.0,0,0,0,0,,Matches,e4b39692
+21,Federico Marchetti,it ITA,GK,Genoa,37,1983,4,4,334,3.7,11,2.96,18,7,38.9,0,1,3,0,0.0,0,0,0,0,,Matches,f794b426
+22,Alex Meret,it ITA,GK,Napoli,23,1997,22,22,1980,22.0,29,1.32,82,53,64.6,13,5,4,6,27.3,2,2,0,0,0.0,Matches,9413b19f
+23,Vanja Milinković-Savić,rs SRB,GK,Torino,23,1997,5,5,450,5.0,6,1.20,20,14,70.0,2,2,1,1,20.0,1,1,0,0,0.0,Matches,9fa26bc2
+24,Antonio Mirante,it ITA,GK,Roma,37,1983,13,13,1153,12.8,19,1.48,55,36,65.5,6,3,4,5,38.5,3,2,1,0,33.3,Matches,30223b33
+25,Lorenzo Montipò,it ITA,GK,Benevento,24,1996,37,37,3330,37.0,74,2.00,173,103,57.2,7,11,19,7,18.9,5,4,1,0,20.0,Matches,c1d95617
+26,Juan Musso,ar ARG,GK,Udinese,26,1994,35,35,3147,35.0,51,1.46,150,99,66.0,9,10,16,8,22.9,13,13,0,0,0.0,Matches,a111cf41
+27,David Ospina,co COL,GK,Napoli,31,1988,16,16,1440,16.0,12,0.75,42,30,71.4,11,0,5,8,50.0,3,3,0,0,0.0,Matches,82b1198a
+28,Daniele Padelli,it ITA,GK,Inter,34,1985,1,0,45,0.5,1,2.00,2,1,50.0,0,0,0,0,,1,1,0,0,0.0,Matches,cf1c23d8
+29,Alberto Paleari,it ITA,GK,Genoa,27,1992,3,2,206,2.3,3,1.31,12,9,75.0,1,0,1,1,50.0,0,0,0,0,,Matches,94a3606c
+30,Ivor Pandur,hr CRO,GK,Hellas Verona,20,2000,4,4,332,3.7,6,1.63,13,7,53.8,0,3,1,0,0.0,0,0,0,0,,Matches,457cb02f
+31,Gianluca Pegolo,it ITA,GK,Sassuolo,39,1981,1,1,90,1.0,0,0.00,1,1,100.0,0,1,0,1,100.0,0,0,0,0,,Matches,f058ed1f
+32,Mattia Perin,it ITA,GK,Genoa,27,1992,32,32,2879,32.0,44,1.38,157,119,72.0,9,11,12,8,25.0,7,7,0,0,0.0,Matches,4c62d0c8
+33,Carlo Pinsoglio,it ITA,GK,Juventus,30,1990,1,0,23,0.3,1,3.91,2,1,50.0,0,0,0,0,,0,0,0,0,,Matches,f6a06749
+34,Ivan Provedel,it ITA,GK,Spezia,26,1994,29,29,2610,29.0,55,1.90,130,75,57.7,6,10,13,4,13.8,7,6,1,0,14.3,Matches,277da414
+35,Ionuț Radu,ro ROU,GK,Inter,23,1997,2,1,135,1.5,1,0.67,6,5,83.3,1,0,0,0,0.0,0,0,0,0,,Matches,67f649be
+36,Rafael,br BRA,GK,Spezia,38,1982,3,2,207,2.3,5,2.17,18,13,72.2,0,1,1,1,50.0,0,0,0,0,,Matches,dd06d56c
+37,Federico Ravaglia,it ITA,GK,Bologna,20,1999,4,4,360,4.0,10,2.50,20,10,50.0,0,1,3,0,0.0,1,1,0,0,0.0,Matches,6662d731
+38,Pepe Reina,es ESP,GK,Lazio,37,1982,29,29,2610,29.0,41,1.41,109,75,62.4,18,3,8,9,31.0,8,8,0,0,0.0,Matches,e358587b
+39,Simone Scuffet,it ITA,GK,Udinese,24,1996,1,1,90,1.0,2,2.00,4,2,50.0,0,0,1,0,0.0,1,1,0,0,0.0,Matches,41bd99ea
+40,Luigi Sepe,it ITA,GK,Parma,29,1991,36,36,3240,36.0,76,2.11,185,109,58.9,3,11,22,5,13.9,2,2,0,0,0.0,Matches,343f753a
+41,Marco Silvestri,it ITA,GK,Hellas Verona,29,1991,34,34,3060,34.0,42,1.24,135,93,68.9,11,9,14,7,20.6,7,6,0,1,0.0,Matches,0d422df7
+42,Salvatore Sirigu,it ITA,GK,Torino,33,1987,32,32,2880,32.0,62,1.94,136,74,54.4,5,13,14,7,21.9,9,8,0,1,0.0,Matches,10dc46f0
+43,Łukasz Skorupski,pl POL,GK,Bologna,29,1991,28,28,2520,28.0,46,1.64,147,101,68.7,10,5,13,4,14.3,7,5,2,0,28.6,Matches,ab4449d6
+44,Marco Sportiello,it ITA,GK,Atalanta,28,1992,15,13,1261,14.0,21,1.50,48,27,56.3,9,1,3,2,15.4,2,1,1,0,50.0,Matches,ac4003af
+45,Thomas Strakosha,al ALB,GK,Lazio,25,1995,9,9,810,9.0,14,1.56,38,24,63.2,3,2,4,3,33.3,2,2,0,0,0.0,Matches,339fe0e8
+46,Wojciech Szczęsny,pl POL,GK,Juventus,30,1990,30,30,2677,29.7,32,1.08,96,67,66.7,16,8,6,5,16.7,6,4,2,0,33.3,Matches,01b8a2b2
+47,Ciprian Tătărușanu,ro ROU,GK,Milan,34,1986,1,1,90,1.0,3,3.00,7,4,57.1,0,1,0,0,0.0,1,1,0,0,0.0,Matches,b056e3da
+48,Pietro Terracciano,it ITA,GK,Fiorentina,30,1990,4,2,272,3.0,4,1.32,11,7,63.6,0,1,1,2,100.0,1,0,1,0,100.0,Matches,e1b0a70d
+49,Samir Ujkani,xk KVX,GK,Torino,32,1988,1,1,90,1.0,1,1.00,3,2,66.7,0,1,0,0,0.0,0,0,0,0,,Matches,96640846
+50,Guglielmo Vicario,it ITA,GK,Cagliari,23,1996,4,4,360,4.0,6,1.50,21,15,71.4,3,0,1,1,25.0,0,0,0,0,,Matches,77d6fd4d
+51,Jeroen Zoet,nl NED,GK,Spezia,29,1991,7,7,603,6.7,12,1.79,30,18,60.0,3,1,3,1,14.3,3,3,0,0,0.0,Matches,cc1a0c57
+
+
+Provided by <a href="https://www.sports-reference.com/sharing.html?utm_source=direct&utm_medium=Share&utm_campaign=ShareTool">FBref.com</a>: <a href="https://fbref.com/en/comps/11/2020-2021/keepers/2020-2021-Serie-A-M-Stats?sr&utm_source=direct&utm_medium=Share&utm_campaign=ShareTool#stats_keeper">View Original Table</a><br>Generated 8/25/2026.
