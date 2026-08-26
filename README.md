@@ -6,6 +6,20 @@ L'obiettivo è semplice: prendere decisioni rapide senza perdere il contesto. Fa
 
 > Dati, rose, preferiti, note e cronologia dell'asta restano sul computer dell'utente. La repository pubblica separa i dati condivisibili dai dati locali e riservati.
 
+## 🖼️ Anteprima
+
+<p align="center">
+  <img src="imgs/overview.png" alt="Panoramica dell'Assistente Asta Fantacalcio" width="900">
+</p>
+
+<p align="center"><em>Elenco giocatori, fascia d'asta, scheda dettagliata e strumenti per l'asta live.</em></p>
+
+<p align="center">
+  <img src="imgs/sub_plots.png" alt="Grafici storici delle statistiche del giocatore" width="900">
+</p>
+
+<p align="center"><em>Grafici storici ridimensionabili per leggere l'andamento delle statistiche.</em></p>
+
 ## ✨ Cosa può fare
 
 - Elenco ricercabile dei giocatori di Serie A 2026-27, ordinabile e filtrabile per ruolo Classic, squadra, fascia, preferiti, esclusi, disponibilità e formazione tipo.
