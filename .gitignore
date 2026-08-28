@@ -1,0 +1,10 @@
+# Chiavi e dati non redistribuibili.
+api_football_key.txt
+
+# File con rose personali
+dati_riservati/asta_personale.sqlite3
+dati_riservati/backup_asta/
+
+# Cache Python.
+__pycache__/
+*.py[cod]

@@ -27,7 +27,7 @@ import tkinter as tk
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
-from PIL import Image, ImageDraw, ImageTk
+from PIL import Image, ImageDraw, ImageFont, ImageTk
 
 
 ROOT = Path(__file__).resolve().parent
@@ -210,10 +210,10 @@ def normalizza_percorsi_foto(connessione: sqlite3.Connection) -> None:
         return
     aggiornamenti = []
     for giocatore_id, percorso in connessione.execute(
-        "SELECT id, foto_locale FROM giocatori WHERE foto_locale IS NOT NULL"
+        "SELECT id, foto_locale FROM giocatori"
     ):
-        destinazione = FOTO_DIR / Path(percorso).name
-        if str(destinazione) != percorso and destinazione.exists():
+        destinazione = FOTO_DIR / f"{giocatore_id}.png"
+        if destinazione.exists() and str(destinazione) != (percorso or ""):
             aggiornamenti.append((str(destinazione), giocatore_id))
     if aggiornamenti:
         connessione.executemany(
@@ -334,7 +334,7 @@ NOMI_WIKIMEDIA = {
     "Sutalo J.": "Josip Šutalo", "Terracciano F.": "Filippo Terracciano", "Ziolkowski": "Jan Ziółkowski",
     "Bleve": "Marco Bleve", "Martinez Jo.": "Josep Martínez", "Montipò": "Lorenzo Montipò",
     "Pisseri": "Matteo Pisseri", "Satalino": "Giacomo Satalino", "Sommariva": "Daniele Sommariva",
-    "Terracciano": "Pietro Terracciano", "Vicario": "Guglielmo Vicario", "Vigorito": "Mauro Vigorito",
+    "Terracciano": "Pietro Terracciano", "Vicario": "Guglielmo Vicario", "Grabara": "Kamil Grabara", "Vigorito": "Mauro Vigorito",
 }
 COLLEGAMENTI_MANUALI_FBREF = {
     "9d376bef": "Berisha M.",
@@ -845,7 +845,7 @@ def righe_fbref_squadre(percorso: Path) -> list[tuple[str, list[dict]]]:
 
 def importa_statistiche_squadre_fbref(connessione: sqlite3.Connection) -> int:
     cartella_radice = ROOT / "statistiche_squadre"
-    if not cartella_radice.exists():
+    if not cartella_radice.exists() or not any(cartella_radice.glob("**/*.csv")):
         return 0
     connessione.execute("DELETE FROM statistiche_squadre_fbref")
     importate = 0
@@ -888,7 +888,7 @@ def punteggio_abbinamento_fbref(candidato: sqlite3.Row, nome_fbref: str, squadra
 
 def importa_fbref(connessione: sqlite3.Connection) -> tuple[int, int]:
     cartella_radice = ROOT / "statistiche_avanzate"
-    if not cartella_radice.exists():
+    if not cartella_radice.exists() or not any(cartella_radice.glob("**/*.csv")):
         return 0, 0
     connessione.execute("DELETE FROM collegamenti_fbref")
     connessione.execute("DELETE FROM statistiche_fbref")
@@ -1055,7 +1055,7 @@ def importa_infografica(connessione: sqlite3.Connection) -> tuple[int, int]:
 
 def importa_nazionalita_fbref(connessione: sqlite3.Connection) -> int:
     cartella_radice = ROOT / "statistiche_avanzate"
-    if not cartella_radice.exists():
+    if not cartella_radice.exists() or not any(cartella_radice.glob("*/standard_stats.csv")):
         return 0
     collegamenti = {
         (riga[0], riga[1]): riga[2]
@@ -1207,7 +1207,7 @@ def sincronizza_serie_a(notifica=None) -> tuple[int, int, int]:
         connessione.close()
 
 
-def scarica_foto_api(notifica=None) -> tuple[int, int]:
+def scarica_foto_api(notifica=None, forza: bool = False) -> tuple[int, int]:
     def avvisa(testo: str) -> None:
         if notifica:
             notifica(testo)
@@ -1223,7 +1223,7 @@ def scarica_foto_api(notifica=None) -> tuple[int, int]:
             if not url:
                 continue
             destinazione = FOTO_DIR / f"{giocatore_id}.png"
-            if destinazione.exists() and destinazione.stat().st_size > 0:
+            if destinazione.exists() and destinazione.stat().st_size > 0 and not forza:
                 connessione.execute("UPDATE giocatori SET foto_locale=? WHERE id=?", (str(destinazione), giocatore_id))
                 continue
             if indice == 1 or indice == len(righe) or indice % 20 == 0:
@@ -1264,36 +1264,65 @@ def richiesta_wikimedia(parametri: dict[str, str]) -> dict:
     raise RuntimeError("Wikimedia non ha risposto.")
 
 
+def foto_wikipedia(nome: str) -> bytes | None:
+    """Usa solo una pagina esatta di un calciatore come fallback ai ritratti P18."""
+    for lingua in ("it", "en"):
+        richiesta = Request(
+            f"https://{lingua}.wikipedia.org/api/rest_v1/page/summary/{quote(nome)}",
+            headers={"User-Agent": "AssistenteAstaFantacalcio/1.0 (uso personale offline)"},
+        )
+        try:
+            with urlopen(richiesta, timeout=20) as risposta:
+                dati = json.loads(risposta.read().decode("utf-8"))
+        except (HTTPError, URLError):
+            continue
+        descrizione = (dati.get("description") or "").lower()
+        miniatura = dati.get("thumbnail", {}).get("source")
+        if not miniatura or not any(parola in descrizione for parola in ("calciatore", "footballer", "football player")):
+            continue
+        try:
+            with urlopen(Request(miniatura, headers={"User-Agent": "AssistenteAstaFantacalcio/1.0 (uso personale offline)"}), timeout=25) as risposta:
+                return risposta.read() or None
+        except (HTTPError, URLError):
+            continue
+    return None
+
+
 def foto_wikimedia(nome: str) -> bytes | None:
-    """Restituisce una foto P18 solo per un risultato esatto classificato come calciatore."""
-    ricerca = richiesta_wikimedia({
-        "action": "wbsearchentities", "search": nome, "language": "it", "format": "json", "limit": "6",
-    })
+    """Restituisce un ritratto Wikimedia verificato, con fallback Wikipedia esatto."""
+    try:
+        ricerca = richiesta_wikimedia({
+            "action": "wbsearchentities", "search": nome, "language": "it", "format": "json", "limit": "6",
+        })
+    except RuntimeError:
+        return foto_wikipedia(nome)
     candidati = ricerca.get("search", [])
     esatto = next((candidato for candidato in candidati
                    if normalizza(candidato.get("label", "")) == normalizza(nome)
                    and any(parola in candidato.get("description", "").lower()
                            for parola in ("calciatore", "footballer", "football player"))), None)
     if not esatto:
-        return None
+        return foto_wikipedia(nome)
     time.sleep(0.65)
-    entita = richiesta_wikimedia({
-        "action": "wbgetentities", "ids": esatto["id"], "props": "claims", "format": "json",
-    })
-    dichiarazioni = entita.get("entities", {}).get(esatto["id"], {}).get("claims", {}).get("P18", [])
-    if not dichiarazioni:
-        return None
-    nome_file = dichiarazioni[0].get("mainsnak", {}).get("datavalue", {}).get("value")
-    if not nome_file:
-        return None
-    richiesta = Request(f"{WIKIMEDIA_FILE_PATH}{quote(nome_file)}?width=180",
-                         headers={"User-Agent": "AssistenteAstaFantacalcio/1.0 (uso personale offline)"})
     try:
-        with urlopen(richiesta, timeout=25) as risposta:
-            contenuto = risposta.read()
-        return contenuto or None
-    except (HTTPError, URLError):
-        return None
+        entita = richiesta_wikimedia({
+            "action": "wbgetentities", "ids": esatto["id"], "props": "claims", "format": "json",
+        })
+    except RuntimeError:
+        return foto_wikipedia(nome)
+    dichiarazioni = entita.get("entities", {}).get(esatto["id"], {}).get("claims", {}).get("P18", [])
+    nome_file = dichiarazioni[0].get("mainsnak", {}).get("datavalue", {}).get("value") if dichiarazioni else None
+    if nome_file:
+        richiesta = Request(f"{WIKIMEDIA_FILE_PATH}{quote(nome_file)}?width=180",
+                             headers={"User-Agent": "AssistenteAstaFantacalcio/1.0 (uso personale offline)"})
+        try:
+            with urlopen(richiesta, timeout=25) as risposta:
+                contenuto = risposta.read()
+            if contenuto:
+                return contenuto
+        except (HTTPError, URLError):
+            pass
+    return foto_wikipedia(nome)
 
 
 def scarica_foto_wikimedia(notifica=None) -> tuple[int, int]:
@@ -1480,6 +1509,7 @@ def importa_fantacalcio(connessione: sqlite3.Connection) -> tuple[int, int]:
                 if corrente:
                     connessione.execute("UPDATE giocatori SET in_quotazioni_correnti=1 WHERE id=?", (int(identita),))
                 conteggi[1] += 1
+    normalizza_percorsi_foto(connessione)
     connessione.commit()
     return tuple(conteggi)
 
@@ -1659,6 +1689,7 @@ class Applicazione:
         stile.theme_use("clam")
         stile.configure("Titolo.TLabel", font=("Sans", 18, "bold"))
         stile.configure("Sottotitolo.TLabel", font=("Sans", 10), foreground="#475467")
+        stile.configure("StatoSuccesso.TLabel", font=("Sans", 10, "bold"), foreground="#067647")
         stile.configure("Treeview", background="#ffffff", fieldbackground="#ffffff", foreground="#1d2939", rowheight=26, font=("Sans", 10))
         stile.configure("Treeview.Heading", background="#eaf2ff", foreground="#1d2939", font=("Sans", 10, "bold"), padding=(8, 6))
         stile.map("Treeview", background=[("selected", "#155eef")], foreground=[("selected", "#ffffff")])
@@ -1800,12 +1831,14 @@ class Applicazione:
         self.pro_asta.grid(row=0, column=0, columnspan=5, sticky="w")
         self.contro_asta = ttk.Label(sintesi, text="⚠ Contro: —", style="Sottotitolo.TLabel", wraplength=450)
         self.contro_asta.grid(row=1, column=0, columnspan=5, sticky="w", pady=(2, 5))
-        ttk.Separator(sintesi).grid(row=2, column=0, columnspan=5, sticky="ew", pady=(0, 5))
-        ttk.Label(sintesi, text="Statistiche chiave 2026-27", font=("Sans", 9, "bold")).grid(row=3, column=0, columnspan=5, sticky="w", pady=(0, 3))
+        self.indici_asta = ttk.Label(sintesi, text="Profilo: —", style="Sottotitolo.TLabel", wraplength=450)
+        self.indici_asta.grid(row=2, column=0, columnspan=5, sticky="w", pady=(0, 5))
+        ttk.Separator(sintesi).grid(row=3, column=0, columnspan=5, sticky="ew", pady=(0, 5))
+        ttk.Label(sintesi, text="Statistiche chiave 2026-27", font=("Sans", 9, "bold")).grid(row=4, column=0, columnspan=5, sticky="w", pady=(0, 3))
         self.valori_chiave = []
         for indice in range(5):
             riquadro_valore = tk.Frame(sintesi, background="#f8fafc", highlightbackground="#d0d5dd", highlightthickness=1)
-            riquadro_valore.grid(row=4, column=indice, sticky="nsew", padx=2)
+            riquadro_valore.grid(row=5, column=indice, sticky="nsew", padx=2)
             etichetta = tk.Label(riquadro_valore, text="—", background="#f8fafc", foreground="#475467", font=("Sans", 8, "bold"), justify="center", wraplength=82)
             etichetta.pack(fill="x", padx=4, pady=(4, 0))
             valore_sintesi = tk.Label(riquadro_valore, text="—", background="#f8fafc", foreground="#101828", font=("Sans", 14, "bold"))
@@ -1813,11 +1846,11 @@ class Applicazione:
             self.valori_chiave.append((etichetta, valore_sintesi))
             sintesi.columnconfigure(indice, weight=1)
         self.titolo_storico = ttk.Label(sintesi, text="Media delle stagioni precedenti", font=("Sans", 9, "bold"))
-        self.titolo_storico.grid(row=5, column=0, columnspan=5, sticky="w", pady=(6, 3))
+        self.titolo_storico.grid(row=6, column=0, columnspan=5, sticky="w", pady=(6, 3))
         self.valori_storici = []
         for indice in range(5):
             riquadro_valore = tk.Frame(sintesi, background="#f8fafc", highlightbackground="#d0d5dd", highlightthickness=1)
-            riquadro_valore.grid(row=6, column=indice, sticky="nsew", padx=2)
+            riquadro_valore.grid(row=7, column=indice, sticky="nsew", padx=2)
             etichetta = tk.Label(riquadro_valore, text="—", background="#f8fafc", foreground="#475467", font=("Sans", 8, "bold"), justify="center", wraplength=82)
             etichetta.pack(fill="x", padx=4, pady=(4, 0))
             valore_sintesi = tk.Label(riquadro_valore, text="—", background="#f8fafc", foreground="#101828", font=("Sans", 12, "bold"))
@@ -1875,14 +1908,15 @@ class Applicazione:
         self.dettaglio = ttk.Label(sezione_prestazioni, text="", justify="left", wraplength=480)
         self.dettaglio.pack(fill="x", pady=(8, 6), anchor="w")
         ttk.Label(sezione_prestazioni, text="Andamento MV e FM per stagione").pack(anchor="w")
-        self.grafico = tk.Canvas(sezione_prestazioni, height=160, highlightthickness=0, background="#ffffff")
-        self.grafico.pack(fill="x", pady=(2, 6))
+        self.grafico = tk.Canvas(sezione_prestazioni, height=180, highlightthickness=0, background="#ffffff")
+        self.grafico.pack(fill="both", expand=True, pady=(2, 6))
+        self.grafico.bind("<Configure>", self.ridimensiona_grafico)
         self.notebook_statistiche = ttk.Notebook(sezione_prestazioni)
         self.notebook_statistiche.pack(fill="both", expand=True, pady=(0, 8))
         riquadro_timeline = ttk.Frame(self.notebook_statistiche)
         self.notebook_statistiche.add(riquadro_timeline, text="Classic")
         colonne_timeline = ("stagione", "squadra", "pv", "mv", "fm", "gf", "ass", "amm", "esp", "qta", "fvm")
-        self.timeline = ttk.Treeview(riquadro_timeline, columns=colonne_timeline, show="headings", height=6)
+        self.timeline = ttk.Treeview(riquadro_timeline, columns=colonne_timeline, show="headings", height=10)
         titoli_timeline = {"stagione": "Stagione", "squadra": "Squadra", "pv": "PV", "mv": "MV", "fm": "FM", "gf": "Gol", "ass": "Assist", "amm": "Amm.", "esp": "Esp.", "qta": "Qt.A", "fvm": "FVM"}
         for colonna in colonne_timeline:
             if colonna in {"stagione", "squadra"}:
@@ -1897,12 +1931,13 @@ class Applicazione:
         barra_timeline_orizzontale.pack(side="bottom", fill="x")
         self.timeline.bind("<Motion>", self.mostra_glossario_timeline)
         self.timeline.bind("<Leave>", lambda _: self.suggerimento.nascondi())
+        self.timeline.tag_configure("riga_pari", background="#f7f9fc")
         self.tabelle_fbref = {}
         etichette = {"standard_stats": "Prestazioni", "shooting_stats": "Tiro", "time": "Impiego", "misc": "Disciplina e difesa", "goalkeeping": "Portieri"}
         for fonte in FONTI_FBREF:
             scheda = ttk.Frame(self.notebook_statistiche)
             self.notebook_statistiche.add(scheda, text=etichette[fonte])
-            tabella = ttk.Treeview(scheda, show="headings", height=6)
+            tabella = ttk.Treeview(scheda, show="headings", height=10)
             barra_verticale = ttk.Scrollbar(scheda, orient="vertical", command=tabella.yview)
             barra_orizzontale = ttk.Scrollbar(scheda, orient="horizontal", command=tabella.xview)
             tabella.configure(yscrollcommand=barra_verticale.set, xscrollcommand=barra_orizzontale.set)
@@ -1940,6 +1975,8 @@ class Applicazione:
         sezione_profilo.pack(fill="x", pady=(0, 8))
         sezione_prestazioni.pack(fill="both", expand=True, pady=(0, 8))
         sezione_asta.pack(fill="x", pady=(0, 8))
+        self.rendi_richiudibile(sezione_prestazioni, "Prestazioni")
+        self.rendi_richiudibile(sezione_asta, "Asta")
 
         basso = ttk.Frame(self.radice, padding=(16, 4, 16, 12)); basso.pack(fill="x")
         self.riepilogo_budget = ttk.Label(basso, text="")
@@ -1950,8 +1987,80 @@ class Applicazione:
             etichetta.pack(side="left", padx=(10, 0))
             self.riepilogo_ruoli[ruolo] = etichetta
         ttk.Label(basso, text="Dati presi da Fantacalcio, FBRef e API-Football", style="Sottotitolo.TLabel").pack(side="right")
-        ttk.Label(basso, textvariable=self.stato).pack(side="right", padx=(0, 16))
+        self.etichetta_stato = ttk.Label(basso, textvariable=self.stato)
+        self.etichetta_stato.pack(side="right", padx=(0, 16))
         self.aggiorna_budget()
+
+    def rendi_richiudibile(self, sezione, titolo: str) -> None:
+        stato = {"layout": None}
+        pulsante = ttk.Button(sezione, text=f"Comprimi {titolo} ▴", width=19)
+
+        def alterna() -> None:
+            if stato["layout"] is None:
+                stato["layout"] = []
+                for elemento in sezione.pack_slaves():
+                    if elemento is pulsante:
+                        continue
+                    opzioni = elemento.pack_info()
+                    opzioni.pop("in", None)
+                    stato["layout"].append((elemento, opzioni))
+                for elemento, _ in stato["layout"]:
+                    elemento.pack_forget()
+                pulsante.configure(text=f"Mostra {titolo} ▾")
+            else:
+                pulsante.pack_forget()
+                layout = stato["layout"]
+                for elemento, opzioni in layout:
+                    elemento.pack(**opzioni)
+                stato["layout"] = None
+                pulsante.configure(text=f"Comprimi {titolo} ▴")
+                pulsante.pack(anchor="e", before=layout[0][0], pady=(0, 4))
+
+        pulsante.configure(command=alterna)
+        primi = sezione.pack_slaves()
+        pulsante.pack(anchor="e", before=primi[0] if primi else None, pady=(0, 4))
+
+    def mostra_feedback(self, testo: str) -> None:
+        if getattr(self, "feedback_timer", None):
+            self.radice.after_cancel(self.feedback_timer)
+        self.stato.set(f"✓ {testo}")
+        self.etichetta_stato.configure(style="StatoSuccesso.TLabel")
+
+        def ripristina() -> None:
+            self.etichetta_stato.configure(style="TLabel")
+            self.stato.set(f"{len(self.tabella.get_children())} giocatori visualizzati")
+            self.feedback_timer = None
+
+        self.feedback_timer = self.radice.after(3500, ripristina)
+
+    def abilita_rotellina(self, tela, consenti_orizzontale: bool = False, contenuto=None) -> None:
+        """Collega la rotellina al canvas attivo, anche su Linux con Button-4 e Button-5."""
+        def scorri(evento) -> None:
+            if getattr(evento, "num", None) == 4:
+                direzione = -1
+            elif getattr(evento, "num", None) == 5:
+                direzione = 1
+            else:
+                direzione = int(-evento.delta / 120) or (-1 if evento.delta > 0 else 1)
+            if consenti_orizzontale and (getattr(evento, "state", 0) & 1):
+                tela.xview_scroll(direzione, "units")
+            else:
+                tela.yview_scroll(direzione, "units")
+
+        def attiva(_evento=None) -> None:
+            tela.bind_all("<MouseWheel>", scorri)
+            tela.bind_all("<Button-4>", scorri)
+            tela.bind_all("<Button-5>", scorri)
+
+        def disattiva(_evento=None) -> None:
+            tela.unbind_all("<MouseWheel>")
+            tela.unbind_all("<Button-4>")
+            tela.unbind_all("<Button-5>")
+
+        for widget in (tela, contenuto):
+            if widget is not None:
+                widget.bind("<Enter>", attiva, add="+")
+                widget.bind("<Leave>", disattiva, add="+")
 
     def query_giocatori(self):
         clausole = ["g.in_quotazioni_correnti=1"]
@@ -2122,7 +2231,7 @@ class Applicazione:
         testo = self.formato(valore)
         return testo.translate(NUMERI_GRASSETTO) if valore is not None and valore == massimo else testo
 
-    def aggiorna_sintesi_asta(self, ruolo: str, tag, corrente, gol_subiti: float | None, medie: dict[str, float | None], storico) -> None:
+    def aggiorna_sintesi_asta(self, giocatore_id: int, ruolo: str, squadra: str, tag, corrente, gol_subiti: float | None, medie: dict[str, float | None], storico) -> None:
         fascia = tag[0][0] if tag else "Da assegnare"
         colore = COLORI_FASCE.get(fascia, COLORI_FASCE["Da assegnare"])
         self.badge_fascia.configure(text=fascia, background=colore)
@@ -2149,30 +2258,112 @@ class Applicazione:
                 valore_sintesi.configure(text=self.formato(valore))
         stagioni_storiche = len(storico)
         self.titolo_storico.configure(text=f"Media delle {stagioni_storiche} stagioni precedenti" if stagioni_storiche else "Nessuna stagione precedente")
-        con_voto = [riga for riga in storico if riga[0] is not None and riga[0] >= 10 and riga[1] is not None]
-        pro = []
-        if len(con_voto) >= 2:
-            sufficienti = sum(riga[1] >= 6 for riga in con_voto)
-            if sufficienti / len(con_voto) >= .75:
-                pro.append(f"Costante: MV almeno 6 in {sufficienti}/{len(con_voto)} stagioni a voto.")
-        if medie.get("PV") is not None and medie["PV"] >= 25:
-            pro.append(f"Sempre a voto: {self.formato(medie['PV'])} PV medie a stagione.")
-        soglie_bonus = {"D": 4, "C": 6, "A": 10}
-        if ruolo in soglie_bonus and medie.get("G+A") is not None and medie["G+A"] >= soglie_bonus[ruolo]:
-            pro.append(f"Da bonus: {self.formato(medie['G+A'])} gol + assist medi a stagione.")
-        contro = []
-        if len(con_voto) >= 2:
-            insufficienti = sum(riga[1] < 6 for riga in con_voto)
-            if insufficienti / len(con_voto) >= .5:
-                contro.append(f"Rendimento discontinuo: MV sotto 6 in {insufficienti}/{len(con_voto)} stagioni a voto.")
-        if medie.get("PV") is not None and medie["PV"] < 15:
-            contro.append(f"Continuità da verificare: {self.formato(medie['PV'])} PV medie.")
-        if ruolo in {"C", "A"} and medie.get("G+A") is not None and medie["G+A"] < soglie_bonus[ruolo]:
-            contro.append(f"Pochi bonus nello storico: {self.formato(medie['G+A'])} gol + assist medi.")
-        if medie.get("FM") is not None and medie["FM"] < 6 and len(contro) < 3:
-            contro.append("Fantamedia storica sotto la sufficienza.")
-        self.pro_asta.configure(text="✓ Pro: " + (" • ".join(pro[:3]) if pro else "nessun segnale statistico forte nello storico."))
-        self.contro_asta.configure(text="⚠ Contro: " + (" • ".join(contro[:3]) if contro else "nessuna criticità statistica forte nello storico."))
+        def media_ponderata(valori: list[float | None]) -> float | None:
+            valori = [valore for valore in valori[:3] if valore is not None]
+            if not valori:
+                return None
+            pesi = (.5, .3, .2)[:len(valori)]
+            return sum(valore * peso for valore, peso in zip(valori, pesi)) / sum(pesi)
+
+        def scala(valore: float | None, minimo: float, massimo: float) -> float:
+            if valore is None:
+                return 50.0
+            return max(0.0, min(100.0, (valore - minimo) * 100 / (massimo - minimo)))
+
+        righe = [riga for riga in list(reversed(storico))[:5] if riga[0] is not None and riga[0] >= 10]
+        pv, mv, fm = (media_ponderata([riga[indice] for riga in righe]) for indice in (0, 1, 2))
+        gol = media_ponderata([riga[3] for riga in righe])
+        assist = media_ponderata([riga[5] for riga in righe])
+        bonus = None if gol is None and assist is None else (gol or 0) + (assist or 0)
+        soglia_bonus = {"P": 0, "D": 4, "C": 7, "A": 11}.get(ruolo, 6)
+        affidabilita_storica = scala(pv, 10, 30) * .55 + scala(mv, 5.55, 6.35) * .45
+        bonus_storico = scala(fm, 5.5, 6.4) if ruolo == "P" else scala(bonus, max(0, soglia_bonus - 6), soglia_bonus + 5) * .7 + scala(fm, 5.7, 7.1) * .3
+        corrente_valida = corrente is not None and (corrente[2] or 0) >= 10
+        affidabilita_corrente = (scala(corrente[2], 10, 30) * .55 + scala(corrente[3], 5.55, 6.35) * .45) if corrente_valida else None
+        bonus_corrente = (scala(corrente[4], 5.5, 6.4) if ruolo == "P" else scala((corrente[5] or 0) + (corrente[6] or 0), max(0, soglia_bonus - 6), soglia_bonus + 5) * .7 + scala(corrente[4], 5.7, 7.1) * .3) if corrente_valida else None
+
+        indicazione = self.db.execute("SELECT titolare, ballottaggio, fuori_ruolo, ballottaggio_vantaggio, ballottaggio_svantaggio FROM indicazioni_formazione WHERE giocatore_id=?", (giocatore_id,)).fetchone()
+        titolare = bool(indicazione and indicazione[0])
+        ballottaggio = bool(indicazione and indicazione[1])
+        fuori_ruolo = indicazione[2] if indicazione else None
+        gerarchia = 85.0 if titolare and not ballottaggio else (55.0 if titolare else (38.0 if ballottaggio else 50.0))
+        piazzati = self.db.execute("SELECT tipo, priorita FROM specialisti_piazzati WHERE giocatore_id=? ORDER BY priorita, tipo", (giocatore_id,)).fetchall()
+        primo_piazzato = next((tipo for tipo, priorita in piazzati if priorita == 1), None)
+        if primo_piazzato:
+            gerarchia = min(100.0, gerarchia + 10)
+
+        stagioni_squadra = [(stagione, fonti) for stagione, fonti in self.righe_squadra_fbref(squadra) if stagione < "2026-27"][:5]
+        def media_squadra(fonte: str, codice: str) -> float | None:
+            dati = [self.valore_metrica_squadra(fonti, fonte, codice) for _, fonti in stagioni_squadra]
+            dati = [dato for dato in dati if dato is not None]
+            return sum(dati) / len(dati) if dati else None
+        ga90, clean_sheet = media_squadra("goalkeeping", "GA90#1"), media_squadra("goalkeeping", "CS%#1")
+        gol90, tiri90 = media_squadra("standard_stats", "Gls#2"), media_squadra("shooting_stats", "Sh/90#1")
+        contesto = (scala(clean_sheet, 20, 38) * .55 + (100 - scala(ga90, .85, 1.65)) * .45) if ruolo in {"P", "D"} else (scala(gol90, 1.05, 1.7) * .6 + scala(tiri90, 8, 14) * .4)
+        if not stagioni_squadra:
+            contesto = 50.0
+        def combina(storico_indice: float, corrente_indice: float | None) -> int:
+            peso_storico = .7 if corrente_indice is None else .55
+            return round(peso_storico * storico_indice + (.15 * corrente_indice if corrente_indice is not None else 0) + .2 * contesto + .1 * gerarchia)
+        affidabilita = combina(affidabilita_storica, affidabilita_corrente)
+        indice_bonus = combina(bonus_storico, bonus_corrente)
+        rischio = round(max(0, min(100, 100 - (.55 * affidabilita_storica + .2 * contesto + .1 * gerarchia + (.15 * affidabilita_corrente if affidabilita_corrente is not None else .15 * affidabilita_storica)))))
+        if ballottaggio:
+            rischio = min(100, rischio + 15)
+        if len(righe) < 2:
+            rischio = min(100, rischio + 12)
+        self.indici_asta.configure(text=f"Profilo · Affidabilità {affidabilita}/100 · Bonus {indice_bonus}/100 · Contesto {round(contesto)}/100 · Rischio {rischio}/100")
+
+        pro: list[tuple[int, str]] = []
+        contro: list[tuple[int, str]] = []
+        if pv is not None and pv >= 25:
+            pro.append((affidabilita, f"Sempre a voto: {self.formato(pv)} PV medie nelle ultime stagioni."))
+        if mv is not None and len(righe) >= 2:
+            sufficienti = sum(riga[1] is not None and riga[1] >= 6 for riga in righe)
+            if mv >= 6 and sufficienti >= 2:
+                pro.append((affidabilita + 3, f"Costante: MV {self.formato(mv)}; sufficienza in {sufficienti}/{len(righe)} stagioni utili."))
+        if ruolo != "P" and bonus is not None and bonus >= soglia_bonus:
+            pro.append((indice_bonus + 5, f"Da bonus: {self.formato(bonus)} gol + assist medi a stagione."))
+        if ruolo == "P" and fm is not None and fm >= 6.1:
+            pro.append((indice_bonus + 5, f"Portiere da rendimento: FM storica {self.formato(fm)}."))
+        if titolare and not ballottaggio:
+            pro.append((72, "Titolare nella formazione tipo."))
+        if primo_piazzato:
+            nomi = {"rigori": "Rigorista", "punizioni": "Tiratore di punizioni", "angoli": "Tiratore di angoli"}
+            pro.append((78, f"{nomi.get(primo_piazzato, primo_piazzato.title())} indicato come prima scelta."))
+        if fuori_ruolo and ruolo in {"D", "C"} and any(parola in normalizza(fuori_ruolo) for parola in ("attacc", "punta", "trequart", "ala")):
+            pro.append((75, f"Fuori ruolo offensivo: Classic {ruolo}, impiegato {fuori_ruolo}."))
+        if contesto >= 68:
+            testo_contesto = f"Squadra protettiva: {self.formato(ga90)} gol subiti/90 e {self.formato(clean_sheet)}% clean sheet nello storico." if ruolo in {"P", "D"} else f"Squadra propositiva: {self.formato(gol90)} gol/90 e {self.formato(tiri90)} tiri/90 nello storico."
+            pro.append((round(contesto), testo_contesto))
+        if ballottaggio:
+            avversario = (indicazione[3] or indicazione[4]) if indicazione else None
+            dettaglio = " con " + avversario if avversario else ""
+            contro.append((95, "Ballottaggio" + dettaglio + ": minutaggio da monitorare."))
+        elif indicazione and not titolare:
+            contro.append((80, "Non inserito nella formazione tipo: gerarchia da verificare."))
+        if pv is not None and pv < 15:
+            contro.append((76, f"Campione ridotto: {self.formato(pv)} PV medie nello storico recente."))
+        if mv is not None and mv < 6:
+            contro.append((72, f"Voto da alzare: MV storica {self.formato(mv)} sotto la sufficienza."))
+        if ruolo in {"C", "A"} and bonus is not None and bonus < soglia_bonus:
+            contro.append((68, f"Bonus da consolidare: {self.formato(bonus)} gol + assist medi a stagione."))
+        if contesto <= 38:
+            testo_contesto = f"Contesto difensivo esigente: {self.formato(ga90)} gol subiti/90 e {self.formato(clean_sheet)}% clean sheet." if ruolo in {"P", "D"} else f"Volume offensivo contenuto: {self.formato(gol90)} gol/90 e {self.formato(tiri90)} tiri/90 della squadra."
+            contro.append((70, testo_contesto))
+        if len(righe) < 2:
+            contro.append((64, "Storico limitato: valutazione più incerta del solito."))
+        def seleziona(voci: list[tuple[int, str]]) -> list[str]:
+            risultato = []
+            for _, testo in sorted(voci, key=lambda voce: voce[0], reverse=True):
+                if testo not in risultato:
+                    risultato.append(testo)
+                if len(risultato) == 3:
+                    break
+            return risultato
+        pro_testo, contro_testo = seleziona(pro), seleziona(contro)
+        self.pro_asta.configure(text="✓ Pro: " + (" • ".join(pro_testo) if pro_testo else "Profilo ancora da definire: dati storici insufficienti."))
+        self.contro_asta.configure(text="⚠ Contro: " + (" • ".join(contro_testo) if contro_testo else "Nessuna criticità forte nei dati disponibili."))
 
     def aggiorna_elenco(self) -> None:
         selezionato = self.tabella.selection()
@@ -2248,9 +2439,14 @@ class Applicazione:
                 testo = f"{nome} — statistica riferita alla stagione e alla squadra mostrate."
         self.suggerimento.mostra_sotto_colonna(tabella, evento, testo)
 
+    def ridimensiona_grafico(self, _evento=None) -> None:
+        if hasattr(self, "timeline_grafico"):
+            self.disegna_grafico(self.timeline_grafico)
+
     def disegna_grafico(self, timeline) -> None:
         self.grafico.delete("all")
-        larghezza = max(self.grafico.winfo_width(), 360); altezza = 160
+        larghezza = max(self.grafico.winfo_width(), 360)
+        altezza = max(self.grafico.winfo_height(), 160)
         margine_sinistro, margine_destro, margine_alto, margine_basso = 34, 14, 18, 28
         valori = [v for riga in timeline for v in (riga[3], riga[4]) if v is not None]
         if not valori:
@@ -2400,7 +2596,6 @@ class Applicazione:
             partite = statistiche_api.get("games", {})
             gol = statistiche_api.get("goals", {})
             squadra_api = dati.get("team", statistiche_api.get("team", {}))
-            squadra_anagrafica = squadra_api.get("name") or squadra_anagrafica
             if nazionalita == "—":
                 nazionalita = profilo.get("nationality") or "—"
             eta = profilo.get("age") or "—"
@@ -2417,11 +2612,11 @@ class Applicazione:
         self.aggiorna_bandiera(codice_nazione)
         self.aggiornamento_scheda.configure(text=f"Dati aggiornati il {self.formato_data(aggiornato_il)}" if aggiornato_il else "")
         self.aggiorna_foto(giocatore[3])
-        self.aggiorna_stemma(squadra_api, squadra_anagrafica)
+        self.aggiorna_stemma(None, squadra_anagrafica)
         self.aggiorna_contesto_squadra(giocatore[2] or squadra_anagrafica, giocatore[1], identita)
         self.aggiorna_asta_live()
         self.aggiorna_piano_b(identita, giocatore[1], tag[0][0] if tag else "Da assegnare")
-        self.aggiorna_sintesi_asta(giocatore[1], tag, corrente, gol_subiti, medie, storico)
+        self.aggiorna_sintesi_asta(identita, giocatore[1], giocatore[2] or squadra_anagrafica, tag, corrente, gol_subiti, medie, storico)
         note_asta = []
         if preferenze[2]:
             note_asta.append(f"Nota personale: {preferenze[2]}")
@@ -2431,18 +2626,20 @@ class Applicazione:
         self.timeline.delete(*self.timeline.get_children())
         indici_positivi = (2, 3, 4, 5, 6, 9, 10)
         massimi = {indice: max((riga[indice] for riga in timeline if riga[indice] is not None), default=None) for indice in indici_positivi}
-        for riga in timeline:
+        for indice_riga, riga in enumerate(timeline):
             valori = [self.formato_massimo(valore, massimi.get(indice)) if indice in indici_positivi else self.formato(valore)
                       for indice, valore in enumerate(riga[2:], start=2)]
-            self.timeline.insert("", END, values=(riga[0], riga[1], *valori))
-        self.disegna_grafico(list(reversed(timeline)))
+            self.timeline.insert("", END, values=(riga[0], riga[1], *valori),
+                                 tags=("riga_pari",) if indice_riga % 2 else ())
+        self.timeline_grafico = list(reversed(timeline))
+        self.disegna_grafico(self.timeline_grafico)
         self.mostra_statistiche_fbref(identita)
 
     def mostra_statistiche_fbref(self, giocatore_id: int) -> None:
         righe = self.db.execute("""
             SELECT s.stagione, s.squadra_fbref, s.dati_json
             FROM statistiche_fbref s JOIN collegamenti_fbref c ON c.fbref_id=s.fbref_id AND c.stagione=s.stagione
-            WHERE c.giocatore_id=? ORDER BY s.stagione
+            WHERE c.giocatore_id=? ORDER BY s.stagione DESC
         """, (giocatore_id,)).fetchall()
         per_fonte = {fonte: [] for fonte in FONTI_FBREF}
         for stagione, squadra, dati_json in righe:
@@ -2454,12 +2651,18 @@ class Applicazione:
             metriche = righe_fonte[0][2] if righe_fonte else []
             colonne = ("stagione", "squadra", *[metrica["codice"] for metrica in metriche])
             tabella.configure(columns=colonne)
+            tabella.tag_configure("riga_pari", background="#f7f9fc")
             tabella.heading("stagione", text="Stagione"); tabella.column("stagione", width=80, anchor="center")
             tabella.heading("squadra", text="Squadra"); tabella.column("squadra", width=105)
             for metrica in metriche:
                 codice, nome = metrica["codice"], metrica["nome"]
-                valori_plot = [(stagione, numero(next((m["valore"] for m in valori if m["codice"] == codice), ""))) for stagione, _, valori in righe_fonte]
-                tabella.heading(codice, text=nome, command=lambda n=nome, v=valori_plot: self.apri_plot_statistica(n, v))
+                valori_plot = sorted(
+                    [(stagione, numero(next((m["valore"] for m in valori if m["codice"] == codice), "")))
+                     for stagione, _, valori in righe_fonte],
+                    key=lambda valore: valore[0],
+                )
+                squadre_plot = [(stagione, squadra) for stagione, squadra, _ in righe_fonte]
+                tabella.heading(codice, text=nome, command=lambda n=nome, v=valori_plot, s=squadre_plot: self.apri_plot_statistica(n, v, s))
                 tabella.column(codice, width=max(92, len(nome) * 7), anchor="center")
             massimi = {}
             if len(righe_fonte) > 1:
@@ -2467,8 +2670,9 @@ class Applicazione:
                     if metrica["positivo"]:
                         valori_numerici = [numero(next((m["valore"] for m in valori if m["codice"] == metrica["codice"]), "")) for _, _, valori in righe_fonte]
                         massimi[metrica["codice"]] = max((valore for valore in valori_numerici if valore is not None), default=None)
-            for stagione, squadra, valori in righe_fonte:
-                tabella.insert("", END, values=(stagione, squadra, *[self.formato_massimo(numero(metrica["valore"]), massimi.get(metrica["codice"])) if metrica["positivo"] else self.formato(numero(metrica["valore"])) for metrica in valori]))
+            for indice_riga, (stagione, squadra, valori) in enumerate(righe_fonte):
+                tabella.insert("", END, values=(stagione, squadra, *[self.formato_massimo(numero(metrica["valore"]), massimi.get(metrica["codice"])) if metrica["positivo"] else self.formato(numero(metrica["valore"])) for metrica in valori]),
+                              tags=("riga_pari",) if indice_riga % 2 else ())
 
     @staticmethod
     def valore_metrica_squadra(fonti: dict, fonte: str, codice: str) -> float | None:
@@ -2516,6 +2720,10 @@ class Applicazione:
             valore = sum(valori) / len(valori) if valori else self.valore_metrica_squadra(fonti, fonte, codice)
             etichetta.configure(text=nome)
             valore_squadra.configure(text=(self.formato(valore) + suffisso) if valore is not None else "—")
+            descrizione = f"{nome} — media delle stagioni Serie A disponibili della squadra."
+            for widget in (etichetta, valore_squadra):
+                widget.bind("<Enter>", lambda evento, testo=descrizione, widget=widget: self.suggerimento.mostra_sotto(widget, testo))
+                widget.bind("<Leave>", lambda _: self.suggerimento.nascondi())
         parti = []
         for fonte, codice, etichetta, suffisso in storico_metriche:
             valori = [self.valore_metrica_squadra(fonti_storiche, fonte, codice) for _, fonti_storiche in complete]
@@ -2622,7 +2830,7 @@ class Applicazione:
         notebook.pack(fill="both", expand=True, padx=12, pady=12)
         etichette = {"standard_stats": "Prestazioni", "shooting_stats": "Tiro", "goalkeeping": "Portieri", "time": "Impiego", "misc": "Disciplina"}
         for fonte in FONTI_FBREF:
-            righe_fonte = [(stagione, fonti[fonte]) for stagione, fonti in reversed(righe) if fonte in fonti]
+            righe_fonte = [(stagione, fonti[fonte]) for stagione, fonti in righe if fonte in fonti]
             if not righe_fonte:
                 continue
             scheda = ttk.Frame(notebook, padding=8)
@@ -2633,7 +2841,7 @@ class Applicazione:
             tabella.heading("stagione", text="Stagione"); tabella.column("stagione", width=90, anchor="center")
             for metrica in metriche:
                 codice, nome = metrica["codice"], metrica["nome"]
-                valori_plot = [(stagione, self.valore_metrica_squadra({fonte: valori}, fonte, codice)) for stagione, valori in righe_fonte]
+                valori_plot = sorted([(stagione, self.valore_metrica_squadra({fonte: valori}, fonte, codice)) for stagione, valori in righe_fonte], key=lambda valore: valore[0])
                 tabella.heading(codice, text=nome, command=lambda n=nome, v=valori_plot: self.apri_plot_statistica(n, v))
                 tabella.column(codice, width=max(96, len(nome) * 7), anchor="center")
             for stagione, valori in righe_fonte:
@@ -2641,6 +2849,8 @@ class Applicazione:
             barra_v = ttk.Scrollbar(scheda, orient="vertical", command=tabella.yview)
             barra_h = ttk.Scrollbar(scheda, orient="horizontal", command=tabella.xview)
             tabella.configure(yscrollcommand=barra_v.set, xscrollcommand=barra_h.set)
+            tabella.bind("<Motion>", lambda evento, tabella=tabella: self.mostra_glossario_fbref(evento, tabella))
+            tabella.bind("<Leave>", lambda _: self.suggerimento.nascondi())
             tabella.grid(row=0, column=0, sticky="nsew"); barra_v.grid(row=0, column=1, sticky="ns"); barra_h.grid(row=1, column=0, sticky="ew")
             scheda.rowconfigure(0, weight=1); scheda.columnconfigure(0, weight=1)
 
@@ -2653,19 +2863,22 @@ class Applicazione:
                   "esp": ("s.espulsioni", "Espulsioni"), "qta": ("q.quotazione_attuale", "Quotazione attuale Classic"), "fvm": ("q.fvm", "FVM")}
         campo, nome = campi[metrica]
         valori = self.db.execute(f"""
-            SELECT s.stagione, {campo} FROM statistiche_fanta s
+            SELECT s.stagione, {campo}, s.squadra FROM statistiche_fanta s
             LEFT JOIN quotazioni_fanta q ON q.giocatore_id=s.giocatore_id AND q.stagione=s.stagione
             WHERE s.giocatore_id=? ORDER BY s.stagione
         """, (giocatore_id,)).fetchall()
-        self.apri_plot_statistica(nome, valori)
+        squadre = [(stagione, squadra) for stagione, _, squadra in valori]
+        self.apri_plot_statistica(nome, [(stagione, valore) for stagione, valore, _ in valori], squadre)
 
-    def apri_plot_statistica(self, nome: str, valori: list[tuple[str, float | None]]) -> None:
+    def apri_plot_statistica(self, nome: str, valori: list[tuple[str, float | None]], squadre: list[tuple[str, str]] | None = None) -> None:
         dati = [(stagione, valore) for stagione, valore in valori if valore is not None]
         finestra = Toplevel(self.radice); finestra.title(nome); finestra.transient(self.radice)
         finestra.geometry("720x430"); finestra.minsize(560, 330); finestra.resizable(True, True)
         ttk.Button(finestra, text="✕ Chiudi", command=finestra.destroy).pack(anchor="ne", padx=8, pady=6)
         grafico = tk.Canvas(finestra, background="#ffffff", highlightthickness=0)
         grafico.pack(fill="both", expand=True, padx=12, pady=(0, 12))
+        squadre_per_stagione = dict(squadre or [])
+        finestra.immagini_stemmi = []
 
         def ridisegna(_: tk.Event | None = None) -> None:
             larghezza, altezza = grafico.winfo_width(), grafico.winfo_height()
@@ -2687,6 +2900,37 @@ class Applicazione:
                 x = x0 + indice * (x1 - x0) / max(len(dati) - 1, 1)
                 y = y0 + (massimo - valore) * (y1 - y0) / (massimo - minimo)
                 return x, y
+
+            if squadre_per_stagione:
+                periodi = []
+                for indice, (stagione, _) in enumerate(dati):
+                    squadra = squadre_per_stagione.get(stagione)
+                    if not squadra:
+                        continue
+                    if periodi and periodi[-1][0] == squadra and periodi[-1][2] == indice - 1:
+                        periodi[-1][2] = indice
+                    else:
+                        periodi.append([squadra, indice, indice])
+                colori_bande = ("#edf4ff", "#effaf3", "#fff4ed", "#f5f3ff", "#fff1f3")
+                finestra.immagini_stemmi = []
+                for indice_periodo, (squadra, inizio, fine) in enumerate(periodi):
+                    x_inizio = x0 if inizio == 0 else (punto(inizio - 1, minimo)[0] + punto(inizio, minimo)[0]) / 2
+                    x_fine = x1 if fine == len(dati) - 1 else (punto(fine, minimo)[0] + punto(fine + 1, minimo)[0]) / 2
+                    grafico.create_rectangle(x_inizio, y0, x_fine, y1, fill=colori_bande[indice_periodo % len(colori_bande)], outline="")
+                    centro = (x_inizio + x_fine) / 2
+                    percorso_stemma = self.percorso_stemma_squadra(squadra)
+                    if percorso_stemma:
+                        try:
+                            with Image.open(percorso_stemma) as sorgente:
+                                immagine = sorgente.convert("RGBA")
+                                filtro = Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
+                                immagine.thumbnail((22, 22), filtro)
+                                stemma = ImageTk.PhotoImage(immagine)
+                            finestra.immagini_stemmi.append(stemma)
+                            grafico.create_image(centro, y0 + 13, image=stemma)
+                        except (OSError, tk.TclError):
+                            pass
+                    grafico.create_text(centro, y0 + 28, text=squadra, width=max(48, x_fine - x_inizio - 6), fill="#475467", font=("Sans", 8, "bold"))
 
             for valore, etichetta in zip(tacche_y, etichette_y):
                 y = punto(0, valore)[1]
@@ -2743,9 +2987,33 @@ class Applicazione:
                 pass
         self.bandiera_scheda.configure(image="", text="")
 
+    def percorso_stemma_squadra(self, nome_squadra: str | None) -> Path | None:
+        if not nome_squadra:
+            return None
+        if not hasattr(self, "stemmi_per_squadra"):
+            self.stemmi_per_squadra = {}
+            for (dati_json,) in self.db.execute("SELECT dati_json FROM dati_reali_api"):
+                try:
+                    dati = json.loads(dati_json)
+                    squadra = dati.get("team") or ((dati.get("statistics") or [{}])[0].get("team") or {})
+                    identita, nome = squadra.get("id"), squadra.get("name")
+                    percorso = STEMMI_DIR / f"{identita}.png" if identita else None
+                    if nome and percorso and percorso.exists():
+                        self.stemmi_per_squadra.setdefault(normalizza(nome), percorso)
+                except (json.JSONDecodeError, AttributeError, IndexError):
+                    continue
+        nome_normalizzato = normalizza(nome_squadra)
+        alias = {"milan": "acmilan", "roma": "asroma", "verona": "hellasverona"}
+        percorso = self.stemmi_per_squadra.get(alias.get(nome_normalizzato, nome_normalizzato))
+        if percorso:
+            return percorso
+        storico = STEMMI_DIR / f"storico_{nome_normalizzato}.png"
+        return storico if storico.exists() else None
+
     def aggiorna_stemma(self, squadra: dict | None, nome_squadra: str | None = None) -> None:
+        percorso = self.percorso_stemma_squadra(nome_squadra)
         squadra_id = squadra.get("id") if squadra else None
-        if not squadra_id and nome_squadra:
+        if not squadra_id and nome_squadra and not percorso:
             riga = self.db.execute("""
                 SELECT d.dati_json FROM dati_reali_api d JOIN giocatori g ON g.id=d.giocatore_id
                 WHERE g.squadra=? LIMIT 1
@@ -2755,7 +3023,8 @@ class Applicazione:
                     squadra_id = json.loads(riga[0]).get("team", {}).get("id")
                 except (json.JSONDecodeError, AttributeError):
                     pass
-        percorso = STEMMI_DIR / f"{squadra_id}.png" if squadra_id else None
+        if not percorso:
+            percorso = STEMMI_DIR / f"{squadra_id}.png" if squadra_id else None
         if percorso and percorso.exists():
             try:
                 immagine = tk.PhotoImage(file=percorso)
@@ -2769,15 +3038,17 @@ class Applicazione:
                 pass
         self.stemma_scheda.configure(image="", text="")
 
-    def icona_rosa(self, foto_locale: str | None, dati_squadra: str | None) -> ImageTk.PhotoImage | None:
+    def icona_rosa(self, foto_locale: str | None, dati_squadra: str | None, nome_squadra: str | None = None) -> ImageTk.PhotoImage | None:
         percorsi = []
         if foto_locale and Path(foto_locale).exists():
             percorsi.append(Path(foto_locale))
-        try:
-            squadra_id = json.loads(dati_squadra or "{}").get("team", {}).get("id")
-        except (json.JSONDecodeError, AttributeError):
-            squadra_id = None
-        stemma = STEMMI_DIR / f"{squadra_id}.png" if squadra_id else None
+        stemma = self.percorso_stemma_squadra(nome_squadra)
+        if not stemma:
+            try:
+                squadra_id = json.loads(dati_squadra or "{}").get("team", {}).get("id")
+            except (json.JSONDecodeError, AttributeError):
+                squadra_id = None
+            stemma = STEMMI_DIR / f"{squadra_id}.png" if squadra_id else None
         if stemma and stemma.exists():
             percorsi.append(stemma)
         immagini = []
@@ -2785,10 +3056,10 @@ class Applicazione:
         for percorso in percorsi:
             try:
                 with Image.open(percorso) as immagine:
-                    altezza = 16
-                    larghezza = max(1, round(immagine.width * altezza / immagine.height))
                     filtro = Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
-                    immagini.append(immagine.convert("RGBA").resize((larghezza, altezza), filtro))
+                    miniatura = immagine.convert("RGBA")
+                    miniatura.thumbnail((16, 16), filtro)
+                    immagini.append(miniatura.copy())
                     if foto_locale and percorso == Path(foto_locale):
                         foto_caricata = True
             except OSError:
@@ -2868,12 +3139,13 @@ class Applicazione:
         self.db.commit()
         try:
             crea_backup_asta(self.db)
-            self.stato.set("Asta salvata con backup locale.")
+            messaggio = "Asta salvata con backup locale."
         except sqlite3.Error:
-            self.stato.set("Asta salvata, ma backup non riuscito.")
+            messaggio = "Asta salvata, ma backup non riuscito."
         self.aggiorna_budget()
         self.aggiorna_elenco()
         self.aggiorna_rose_aperte()
+        self.mostra_feedback(messaggio)
 
     def rimuovi_acquisto_id(self, giocatore_id: int) -> bool:
         acquisto = self.db.execute("SELECT fantallenatore_id, prezzo FROM acquisti_lega WHERE giocatore_id=?", (giocatore_id,)).fetchone()
@@ -2962,6 +3234,25 @@ class Applicazione:
             except OSError as errore:
                 messagebox.showerror("Esporta registro", f"Impossibile salvare il file.\n{errore}", parent=finestra)
 
+        def esporta_rose() -> None:
+            percorso = filedialog.asksaveasfilename(
+                parent=finestra, title="Esporta rose della lega", defaultextension=".csv",
+                initialfile="rose_lega.csv", filetypes=[("File CSV", "*.csv"), ("Tutti i file", "*.*")],
+            )
+            if not percorso:
+                return
+            try:
+                with open(percorso, "w", encoding="utf-8-sig", newline="") as file_csv:
+                    scrittore = csv.writer(file_csv, delimiter=";")
+                    scrittore.writerow(("Fantallenatore", "Ruolo", "Calciatore", "Squadra Serie A", "Fascia", "Prezzo"))
+                    for _, fantallenatore, ruolo, giocatore, squadra, fascia, prezzo in righe_registro():
+                        scrittore.writerow((fantallenatore, ruolo, giocatore, squadra or "", fascia, prezzo))
+                self.stato.set("Rose della lega esportate.")
+            except OSError as errore:
+                messagebox.showerror("Esporta rose", f"Impossibile salvare il file.\n{errore}", parent=finestra)
+
+        ttk.Button(testata, text="Esporta rose CSV", command=esporta_rose).pack(side="right")
+
         def aggiorna_schede() -> None:
             for contenitore in (vista_rose, registro):
                 for figlio in contenitore.winfo_children():
@@ -2976,13 +3267,16 @@ class Applicazione:
             area_rose = ttk.Frame(vista_rose)
             area_rose.pack(fill="both", expand=True)
             tela_rose = tk.Canvas(area_rose, highlightthickness=0)
-            barra_rose = ttk.Scrollbar(area_rose, orient="horizontal", command=tela_rose.xview)
+            barra_orizzontale = ttk.Scrollbar(area_rose, orient="horizontal", command=tela_rose.xview)
+            barra_verticale = ttk.Scrollbar(area_rose, orient="vertical", command=tela_rose.yview)
             colonne_rose = ttk.Frame(tela_rose)
             tela_rose.create_window((0, 0), window=colonne_rose, anchor="nw")
             colonne_rose.bind("<Configure>", lambda _: tela_rose.configure(scrollregion=tela_rose.bbox("all")))
-            tela_rose.configure(xscrollcommand=barra_rose.set)
+            tela_rose.configure(xscrollcommand=barra_orizzontale.set, yscrollcommand=barra_verticale.set)
+            self.abilita_rotellina(tela_rose, consenti_orizzontale=True, contenuto=colonne_rose)
             tela_rose.grid(row=0, column=0, sticky="nsew")
-            barra_rose.grid(row=1, column=0, sticky="ew")
+            barra_verticale.grid(row=0, column=1, sticky="ns")
+            barra_orizzontale.grid(row=1, column=0, sticky="ew")
             area_rose.rowconfigure(0, weight=1)
             area_rose.columnconfigure(0, weight=1)
 
@@ -2999,7 +3293,7 @@ class Applicazione:
             nomi_ruolo = {"P": "Portieri", "D": "Difensori", "C": "Centrocampisti", "A": "Attaccanti"}
             for indice, (identita, nome_fantallenatore, e_mio) in enumerate(fantallenatori):
                 scheda = ttk.LabelFrame(colonne_rose, text=nome_fantallenatore + (" · mia" if e_mio else ""), padding=8)
-                scheda.grid(row=0, column=indice, sticky="ns", padx=(0, 8) if indice == 0 else 4)
+                scheda.grid(row=indice // 4, column=indice % 4, sticky="ns", padx=4, pady=4)
                 residuo, speso, quantita, speso_ruolo, acquisti = self.riepilogo_fantallenatore(identita)
                 ttk.Label(scheda, text=f"Crediti: {residuo}/600 · Spesi: {speso}", font=("Sans", 10, "bold")).pack(anchor="w")
                 ttk.Label(scheda, text=" · ".join(f"{ruolo} {quantita[ruolo]}/{ROSA[ruolo]}" for ruolo in ROSA), style="Sottotitolo.TLabel").pack(anchor="w", pady=(3, 0))
@@ -3009,7 +3303,7 @@ class Applicazione:
                 contenitore.pack(fill="both", expand=True)
                 tabella = ttk.Treeview(contenitore, columns=("ruolo", "nome", "squadra", "fascia", "prezzo"), show=("tree", "headings"), height=12)
                 tabella.heading("#0", text="")
-                tabella.column("#0", width=28, minwidth=28, stretch=False, anchor="center")
+                tabella.column("#0", width=42, minwidth=42, stretch=False, anchor="center")
                 for codice, titolo, larghezza in (("ruolo", "R", 34), ("nome", "Calciatore", 135), ("squadra", "Squadra", 82), ("fascia", "Fascia", 110), ("prezzo", "Cr", 48)):
                     tabella.heading(codice, text=titolo)
                     tabella.column(codice, width=larghezza, anchor="w" if codice in {"nome", "squadra", "fascia"} else "center")
@@ -3017,11 +3311,16 @@ class Applicazione:
                 for fascia, colore in COLORI_FASCE.items():
                     tabella.tag_configure(fascia, background=colore)
                 tabella.bind("<<TreeviewSelect>>", lambda evento, tabella=tabella: apri_scheda_giocatore(evento, tabella))
+                def aggiorna_cursore_rosa(evento, tabella=tabella) -> None:
+                    elemento = tabella.identify_row(evento.y)
+                    tabella.configure(cursor="hand2" if elemento.startswith("giocatore-") else "")
+                tabella.bind("<Motion>", aggiorna_cursore_rosa)
+                tabella.bind("<Leave>", lambda _, tabella=tabella: tabella.configure(cursor=""))
                 for ruolo in ROSA:
                     tabella.insert("", END, values=(ruolo, f"{nomi_ruolo[ruolo]} · {quantita[ruolo]}/{ROSA[ruolo]}", "", "", f"{speso_ruolo[ruolo]} cr"), tags=("intestazione_ruolo",))
                     for giocatore_id, ruolo_acquisto, giocatore, squadra, fascia, prezzo, foto_locale, dati_squadra in acquisti:
                         if ruolo_acquisto == ruolo:
-                            icona = self.icona_rosa(foto_locale, dati_squadra)
+                            icona = self.icona_rosa(foto_locale, dati_squadra, squadra)
                             if icona:
                                 immagini_rose.append(icona)
                             tabella.insert("", END, iid=f"giocatore-{giocatore_id}", image=icona, values=(ruolo, giocatore, squadra or "—", fascia, prezzo), tags=(fascia,))
@@ -3152,52 +3451,114 @@ class Applicazione:
 
         finestra.protocol("WM_DELETE_WINDOW", chiudi)
 
-    def aggiungi_lista_incroci(self, contenitore, combinazioni_punteggi: list[tuple[tuple[str, ...], int]]) -> None:
-        """Mostra le dieci combinazioni con punteggio più basso e più alto."""
-        ttk.Label(contenitore, text="Punteggio basso = meno sovrapposizioni casalinghe.", style="Sottotitolo.TLabel").pack(anchor="w", padx=10, pady=(10, 4))
-        pannelli = ttk.Frame(contenitore)
-        pannelli.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-        for indice, (titolo, righe) in enumerate((("Migliori abbinamenti", combinazioni_punteggi[:10]), ("Peggiori abbinamenti", list(reversed(combinazioni_punteggi[-10:]))))):
-            riquadro = ttk.LabelFrame(pannelli, text=titolo, padding=6)
-            riquadro.grid(row=0, column=indice, sticky="nsew", padx=(0, 5) if indice == 0 else (5, 0))
-            tabella = ttk.Treeview(riquadro, columns=("abbinamento", "punteggio"), show="headings", height=10)
-            tabella.heading("abbinamento", text="Squadre")
-            tabella.heading("punteggio", text="Punteggio")
-            tabella.column("abbinamento", width=225, anchor="w")
-            tabella.column("punteggio", width=90, anchor="center")
-            for combinazione, punteggio in righe:
-                nomi = " + ".join(NOMI_GRIGLIA.get(codice, codice) for codice in combinazione)
-                tabella.insert("", END, values=(nomi, punteggio))
-            tabella.pack(fill="both", expand=True)
-            pannelli.columnconfigure(indice, weight=1)
-        pannelli.rowconfigure(0, weight=1)
+    def squadre_portieri_miei(self, squadre: list[str]) -> list[str]:
+        """Restituisce i codici delle squadre dei portieri già nella mia rosa."""
+        righe = self.db.execute("""
+            SELECT DISTINCT g.squadra
+            FROM acquisti_lega a
+            JOIN fantallenatori f ON f.id=a.fantallenatore_id
+            JOIN giocatori g ON g.id=a.giocatore_id
+            WHERE f.e_mio=1 AND g.ruolo=? AND g.squadra IS NOT NULL
+        """, ("P",)).fetchall()
+        squadre_mie = {normalizza(riga[0]) for riga in righe if riga[0]}
+        return [codice for codice in squadre if normalizza(NOMI_GRIGLIA.get(codice, codice)) in squadre_mie]
 
-    def aggiungi_lista_trii(self, contenitore, valutazioni: list[tuple[tuple[str, ...], int, int]]) -> None:
+    def mostra_dettaglio_abbinamento(self, contenitore, combinazione: tuple[str, ...], calendario: dict[int, dict[str, str]]) -> None:
+        """Disegna il mini-calendario della combinazione selezionata, senza scrolling."""
+        for elemento in contenitore.winfo_children():
+            elemento.destroy()
+        nomi = " + ".join(NOMI_GRIGLIA.get(codice, codice) for codice in combinazione)
+        ttk.Label(contenitore, text=nomi, font=("Sans", 10, "bold")).pack(anchor="w")
         ttk.Label(
             contenitore,
-            text="Migliore = più giornate con almeno un portiere che non affronta top o semitop.",
+            text="38 giornate · verde: almeno due alternative sicure · giallo: una · rosso: nessuna contro top/semitop.",
             style="Sottotitolo.TLabel",
-        ).pack(anchor="w", padx=10, pady=(10, 4))
+        ).pack(anchor="w", pady=(0, 4))
+        tessere = ttk.Frame(contenitore)
+        tessere.pack(anchor="w")
+        for indice, giornata in enumerate(sorted(calendario)):
+            avversarie = [(codice, calendario[giornata].get(codice, "—")) for codice in combinazione]
+            sicure = [(codice, avversaria) for codice, avversaria in avversarie if avversaria not in SQUADRE_FORTI]
+            colore = "#d1fadf" if len(sicure) >= 2 else "#fef0c7" if sicure else "#fecdca"
+            testo = f"{giornata}ª\n{len(sicure)}/{len(combinazione)}"
+            descrizione = " · ".join(
+                f"{NOMI_GRIGLIA.get(codice, codice)}–{NOMI_GRIGLIA.get(avversaria, avversaria)}"
+                for codice, avversaria in avversarie
+            )
+            scelta = ", ".join(NOMI_GRIGLIA.get(codice, codice) for codice, _ in sicure) or "nessuna"
+            descrizione = f"Giornata {giornata}: {descrizione}. Alternative sicure: {scelta}."
+            tessera = tk.Label(tessere, text=testo, width=3, background=colore, foreground="#1d2939", font=("Sans", 8, "bold"), padx=3, pady=2)
+            tessera.grid(row=indice // 19, column=indice % 19, padx=1, pady=1)
+            tessera.bind("<Enter>", lambda _, testo=descrizione, widget=tessera: self.suggerimento.mostra_sotto(widget, testo))
+            tessera.bind("<Leave>", lambda _: self.suggerimento.nascondi())
+
+    def aggiungi_lista_incroci(self, contenitore, combinazioni_punteggi: list[tuple[tuple[str, ...], int]], calendario: dict[int, dict[str, str]]) -> None:
+        """Mostra le combinazioni principali e il dettaglio di quella selezionata."""
+        ttk.Label(contenitore, text="Punteggio basso = meno sovrapposizioni casalinghe. Seleziona una riga per vedere le 38 giornate.", style="Sottotitolo.TLabel").pack(anchor="w", padx=8, pady=(8, 3))
         pannelli = ttk.Frame(contenitore)
-        pannelli.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        pannelli.pack(fill="x", padx=8)
+        dettaglio = ttk.LabelFrame(contenitore, text="Mini-calendario", padding=(8, 5))
+        dettaglio.pack(fill="x", padx=8, pady=(6, 8))
+        ttk.Label(dettaglio, text="Seleziona un abbinamento nelle tabelle qui sopra.", style="Sottotitolo.TLabel").pack(anchor="w")
+        gruppi = (("Migliori abbinamenti", combinazioni_punteggi[:10]), ("Peggiori abbinamenti", list(reversed(combinazioni_punteggi[-10:]))))
+        for indice, (titolo, righe) in enumerate(gruppi):
+            riquadro = ttk.LabelFrame(pannelli, text=titolo, padding=5)
+            riquadro.grid(row=0, column=indice, sticky="nsew", padx=(0, 4) if indice == 0 else (4, 0))
+            tabella = ttk.Treeview(riquadro, columns=("abbinamento", "punteggio"), show="headings", height=10)
+            tabella.heading("abbinamento", text="Squadre")
+            tabella.heading("punteggio", text="Punti")
+            tabella.column("abbinamento", width=155, anchor="w")
+            tabella.column("punteggio", width=55, anchor="center", stretch=False)
+            selezioni = {}
+            for numero, (combinazione, punteggio) in enumerate(righe):
+                nomi = " + ".join(NOMI_GRIGLIA.get(codice, codice) for codice in combinazione)
+                identita = str(numero)
+                selezioni[identita] = combinazione
+                tabella.insert("", END, iid=identita, values=(nomi, punteggio))
+            def mostra_selezione(_, albero=tabella, mappa=selezioni):
+                selezione = albero.selection()
+                if selezione:
+                    self.mostra_dettaglio_abbinamento(dettaglio, mappa[selezione[0]], calendario)
+            tabella.bind("<<TreeviewSelect>>", mostra_selezione)
+            tabella.pack(fill="x", expand=True)
+            pannelli.columnconfigure(indice, weight=1)
+
+    def aggiungi_lista_trii(self, contenitore, valutazioni: list[tuple[tuple[str, ...], int, int]], calendario: dict[int, dict[str, str]]) -> None:
+        ttk.Label(
+            contenitore,
+            text="Migliore = più giornate con almeno un portiere che non affronta top o semitop. Seleziona una riga per il dettaglio.",
+            style="Sottotitolo.TLabel",
+        ).pack(anchor="w", padx=8, pady=(8, 3))
+        pannelli = ttk.Frame(contenitore)
+        pannelli.pack(fill="x", padx=8)
+        dettaglio = ttk.LabelFrame(contenitore, text="Mini-calendario", padding=(8, 5))
+        dettaglio.pack(fill="x", padx=8, pady=(6, 8))
+        ttk.Label(dettaglio, text="Seleziona un abbinamento nelle tabelle qui sopra.", style="Sottotitolo.TLabel").pack(anchor="w")
         migliori = valutazioni[:10]
         peggiori = sorted(valutazioni, key=lambda riga: (riga[1], -riga[2]), reverse=True)[:10]
         for indice, (titolo, righe) in enumerate((("Migliori abbinamenti", migliori), ("Peggiori abbinamenti", peggiori))):
-            riquadro = ttk.LabelFrame(pannelli, text=titolo, padding=6)
-            riquadro.grid(row=0, column=indice, sticky="nsew", padx=(0, 5) if indice == 0 else (5, 0))
+            riquadro = ttk.LabelFrame(pannelli, text=titolo, padding=5)
+            riquadro.grid(row=0, column=indice, sticky="nsew", padx=(0, 4) if indice == 0 else (4, 0))
             tabella = ttk.Treeview(riquadro, columns=("abbinamento", "scoperte", "sicure"), show="headings", height=10)
             tabella.heading("abbinamento", text="Squadre")
-            tabella.heading("scoperte", text="Giornate senza alternativa")
-            tabella.heading("sicure", text="Scelte sicure")
-            tabella.column("abbinamento", width=185, anchor="w")
-            tabella.column("scoperte", width=145, anchor="center")
-            tabella.column("sicure", width=95, anchor="center")
-            for combinazione, scoperte, sicure in righe:
+            tabella.heading("scoperte", text="Senza scelta")
+            tabella.heading("sicure", text="Sicure")
+            tabella.column("abbinamento", width=135, anchor="w")
+            tabella.column("scoperte", width=85, anchor="center", stretch=False)
+            tabella.column("sicure", width=55, anchor="center", stretch=False)
+            selezioni = {}
+            for numero, (combinazione, scoperte, sicure) in enumerate(righe):
                 nomi = " + ".join(NOMI_GRIGLIA.get(codice, codice) for codice in combinazione)
-                tabella.insert("", END, values=(nomi, scoperte, sicure))
-            tabella.pack(fill="both", expand=True)
+                identita = str(numero)
+                selezioni[identita] = combinazione
+                tabella.insert("", END, iid=identita, values=(nomi, scoperte, sicure))
+            def mostra_selezione(_, albero=tabella, mappa=selezioni):
+                selezione = albero.selection()
+                if selezione:
+                    self.mostra_dettaglio_abbinamento(dettaglio, mappa[selezione[0]], calendario)
+            tabella.bind("<<TreeviewSelect>>", mostra_selezione)
+            tabella.pack(fill="x", expand=True)
             pannelli.columnconfigure(indice, weight=1)
-        pannelli.rowconfigure(0, weight=1)
 
     def apri_griglia_portieri(self) -> None:
         if not GRIGLIA_PORTIERI_PATH.exists():
@@ -3234,6 +3595,174 @@ class Applicazione:
         tabella.configure(yscrollcommand=barra_v.set, xscrollcommand=barra_o.set)
         tabella.grid(row=0, column=0, sticky="nsew"); barra_v.grid(row=0, column=1, sticky="ns"); barra_o.grid(row=1, column=0, sticky="ew")
         contenitore.rowconfigure(0, weight=1); contenitore.columnconfigure(0, weight=1)
+        tabella.grid_remove(); barra_v.grid_remove(); barra_o.grid_remove()
+
+        legenda = ttk.Frame(completa)
+        legenda.pack(fill="x", padx=10, pady=(0, 8), before=contenitore)
+        ttk.Label(legenda, text="Legenda:", font=("Sans", 9, "bold")).pack(side="left", padx=(0, 6))
+        for testo, colore in (("3–6 ottimo", "#d1fadf"), ("7–9 buono", "#fef0c7"), ("10–12 critico", "#fedf89"), ("13+ sfavorevole", "#fecdca")):
+            tk.Label(legenda, text=testo, background=colore, foreground="#344054", padx=7, pady=3, font=("Sans", 9)).pack(side="left", padx=(0, 5))
+        ttk.Label(legenda, text="Grigio = stessa squadra.", style="Sottotitolo.TLabel").pack(side="left", padx=(5, 0))
+
+        tela_griglia = tk.Canvas(contenitore, highlightthickness=0, background="#ffffff")
+        barra_colori_v = ttk.Scrollbar(contenitore, orient="vertical", command=tela_griglia.yview)
+        barra_colori_o = ttk.Scrollbar(contenitore, orient="horizontal", command=tela_griglia.xview)
+        tela_griglia.configure(yscrollcommand=barra_colori_v.set, xscrollcommand=barra_colori_o.set)
+        corpo_griglia = tk.Frame(tela_griglia, background="#ffffff")
+        tela_griglia.create_window((0, 0), window=corpo_griglia, anchor="nw")
+        corpo_griglia.bind("<Configure>", lambda _: tela_griglia.configure(scrollregion=tela_griglia.bbox("all")))
+        self.abilita_rotellina(tela_griglia, consenti_orizzontale=True, contenuto=corpo_griglia)
+        tela_griglia.grid(row=0, column=0, sticky="nsew"); barra_colori_v.grid(row=0, column=1, sticky="ns"); barra_colori_o.grid(row=1, column=0, sticky="ew")
+
+        dettaglio_portieri = ttk.LabelFrame(completa, text="Portieri delle squadre selezionate", padding=(8, 6))
+        dettaglio_portieri.pack(fill="x", padx=10, pady=(0, 10))
+        immagini_portieri: list[ImageTk.PhotoImage] = []
+        immagini_stemmi_griglia: list[ImageTk.PhotoImage] = []
+
+        def testo_verticale_griglia(codice: str) -> ImageTk.PhotoImage:
+            nome = NOMI_GRIGLIA.get(codice, codice)
+            try:
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 12)
+            except OSError:
+                font = ImageFont.load_default()
+            riquadro = font.getbbox(nome)
+            testo = Image.new("RGBA", (riquadro[2] - riquadro[0] + 6, riquadro[3] - riquadro[1] + 6), (0, 0, 0, 0))
+            ImageDraw.Draw(testo).text((3 - riquadro[0], 3 - riquadro[1]), nome, font=font, fill="#1d2939")
+            ruotato = testo.rotate(90, expand=True)
+            risultato = ImageTk.PhotoImage(ruotato)
+            immagini_stemmi_griglia.append(risultato)
+            return risultato
+
+        def immagine_stemma_griglia(codice: str, lato: int = 22) -> ImageTk.PhotoImage | None:
+            percorso = self.percorso_stemma_squadra(NOMI_GRIGLIA.get(codice, codice))
+            if not percorso:
+                return None
+            try:
+                with Image.open(percorso) as sorgente:
+                    immagine = sorgente.convert("RGBA")
+                    filtro = Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
+                    immagine.thumbnail((lato, lato), filtro)
+                    risultato = ImageTk.PhotoImage(immagine)
+                immagini_stemmi_griglia.append(risultato)
+                return risultato
+            except (OSError, tk.TclError):
+                return None
+
+        celle_griglia: dict[tuple[str, str], tk.Label] = {}
+        intestazioni_riga: dict[str, tk.Label] = {}
+        intestazioni_colonna: dict[str, tk.Label] = {}
+        selezione_righe: set[str] = set()
+        selezione_colonne: set[str] = set()
+
+        def colore_sovrapposizioni(valore, stessa_squadra: bool) -> str:
+            if stessa_squadra or valore is None:
+                return "#eaecf0"
+            if valore <= 6:
+                return "#d1fadf"
+            if valore <= 9:
+                return "#fef0c7"
+            if valore <= 12:
+                return "#fedf89"
+            return "#fecdca"
+
+        def immagine_portiere(percorso: str | None) -> ImageTk.PhotoImage:
+            try:
+                if percorso and Path(percorso).exists():
+                    with Image.open(percorso) as sorgente:
+                        immagine = sorgente.convert("RGBA")
+                else:
+                    immagine = self.sagoma_anonima(34)
+                filtro = Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
+                immagine.thumbnail((34, 34), filtro)
+                risultato = ImageTk.PhotoImage(immagine)
+            except (OSError, tk.TclError):
+                risultato = ImageTk.PhotoImage(self.sagoma_anonima(34))
+            immagini_portieri.append(risultato)
+            return risultato
+
+        def aggiorna_portieri(codici: list[str]) -> None:
+            for elemento in dettaglio_portieri.winfo_children():
+                elemento.destroy()
+            immagini_portieri.clear()
+            if not codici:
+                ttk.Label(dettaglio_portieri, text="Seleziona una squadra nella prima riga o colonna, oppure un incrocio nella matrice.", style="Sottotitolo.TLabel").pack(anchor="w")
+                return
+            riquadri = ttk.Frame(dettaglio_portieri)
+            riquadri.pack(fill="x")
+            for indice, codice in enumerate(dict.fromkeys(codici)):
+                squadra = NOMI_GRIGLIA.get(codice, codice)
+                riquadro = ttk.LabelFrame(riquadri, text=squadra, padding=5)
+                riquadro.grid(row=0, column=indice, sticky="nsew", padx=(0, 6) if indice == 0 else 6)
+                portieri = self.db.execute("""
+                    SELECT g.nome, g.foto_locale, q.quotazione_attuale
+                    FROM giocatori g
+                    LEFT JOIN quotazioni_fanta q ON q.giocatore_id=g.id AND q.stagione='2026-27'
+                    WHERE g.in_quotazioni_correnti=1 AND g.squadra=? AND g.ruolo='P'
+                    ORDER BY q.quotazione_attuale DESC, g.nome
+                """, (squadra,)).fetchall()
+                if not portieri:
+                    ttk.Label(riquadro, text="Nessun portiere disponibile.", style="Sottotitolo.TLabel").pack(anchor="w")
+                for nome_portiere, foto_locale, quotazione in portieri:
+                    scheda = ttk.Frame(riquadro)
+                    scheda.pack(fill="x", pady=2)
+                    ttk.Label(scheda, image=immagine_portiere(foto_locale)).pack(side="left", padx=(0, 5))
+                    ttk.Label(scheda, text=nome_portiere).pack(side="left")
+                    ttk.Label(scheda, text=f"QtA {self.formato(quotazione)}", font=("Sans", 9, "bold")).pack(side="left", padx=(8, 0))
+                riquadri.columnconfigure(indice, weight=1)
+
+        def aggiorna_evidenza() -> None:
+            for (riga, colonna), cella in celle_griglia.items():
+                evidenziata = riga in selezione_righe or colonna in selezione_colonne
+                cella.configure(relief="solid" if evidenziata else "flat", borderwidth=2 if evidenziata else 0, highlightbackground="#155eef", highlightcolor="#155eef")
+            for codice, intestazione in intestazioni_riga.items():
+                intestazione.configure(background="#bfd7ff" if codice in selezione_righe else "#eaf2ff")
+            for codice, intestazione in intestazioni_colonna.items():
+                intestazione.configure(background="#bfd7ff" if codice in selezione_colonne else "#eaf2ff")
+
+        def seleziona_cella(riga: str, colonna: str) -> None:
+            selezione_righe.clear(); selezione_colonne.clear()
+            selezione_righe.add(riga); selezione_colonne.add(colonna)
+            aggiorna_evidenza(); aggiorna_portieri([riga, colonna])
+
+        def seleziona_riga(codice: str) -> None:
+            selezione_righe.clear(); selezione_colonne.clear()
+            selezione_righe.add(codice)
+            aggiorna_evidenza(); aggiorna_portieri([codice])
+
+        def seleziona_colonna(codice: str) -> None:
+            selezione_righe.clear(); selezione_colonne.clear()
+            selezione_colonne.add(codice)
+            aggiorna_evidenza(); aggiorna_portieri([codice])
+
+        tk.Label(corpo_griglia, text="Squadra", width=15, background="#eaf2ff", foreground="#1d2939", font=("Sans", 9, "bold"), padx=4, pady=5).grid(row=0, column=0, sticky="nsew", padx=1, pady=1)
+        for indice, squadra in enumerate(squadre, start=1):
+            testo_ruotato = testo_verticale_griglia(squadra)
+            intestazione = tk.Label(corpo_griglia, image=testo_ruotato, background="#eaf2ff", padx=5, pady=5, cursor="hand2")
+            intestazione.image = testo_ruotato
+            intestazione.grid(row=0, column=indice, sticky="nsew", padx=1, pady=1)
+            intestazione.bind("<Button-1>", lambda _, codice=squadra: seleziona_colonna(codice))
+            intestazioni_colonna[squadra] = intestazione
+        for riga, squadra in enumerate(squadre, start=1):
+            stemma = immagine_stemma_griglia(squadra, 20)
+            intestazione = tk.Label(corpo_griglia, text=NOMI_GRIGLIA.get(squadra, squadra), image=stemma if stemma else "", compound="left", width=15, background="#eaf2ff", foreground="#1d2939", font=("Sans", 9, "bold"), padx=4, pady=5, anchor="w", cursor="hand2")
+            intestazione.image = stemma
+            intestazione.grid(row=riga, column=0, sticky="nsew", padx=1, pady=1)
+            intestazione.bind("<Button-1>", lambda _, codice=squadra: seleziona_riga(codice))
+            intestazioni_riga[squadra] = intestazione
+            for colonna, avversaria in enumerate(squadre, start=1):
+                valore = matrice.get(squadra, {}).get(avversaria)
+                stessa_squadra = squadra == avversaria
+                testo = "—" if stessa_squadra else (str(valore) if valore is not None else "—")
+                sfondo = colore_sovrapposizioni(valore, stessa_squadra)
+                cella = tk.Label(corpo_griglia, text=testo, width=7, background=sfondo, foreground="#1d2939", font=("Sans", 10, "bold"), padx=1, pady=3, cursor="hand2")
+                cella.grid(row=riga, column=colonna, sticky="nsew", padx=1, pady=1)
+                celle_griglia[(squadra, avversaria)] = cella
+                descrizione = "Stessa squadra: abbinamento non applicabile." if stessa_squadra else f"{NOMI_GRIGLIA.get(squadra, squadra)} + {NOMI_GRIGLIA.get(avversaria, avversaria)}: {testo} sovrapposizioni di partite in casa."
+                cella.bind("<Enter>", lambda evento, testo=descrizione, widget=cella: self.suggerimento.mostra_sotto(widget, testo))
+                cella.bind("<Leave>", lambda _: self.suggerimento.nascondi())
+                if not stessa_squadra:
+                    cella.bind("<Button-1>", lambda _, riga=squadra, colonna=avversaria: seleziona_cella(riga, colonna))
+        aggiorna_portieri([])
 
         for dimensione, titolo in ((2, "Abbinamenti a 2"), (3, "Abbinamenti a 3")):
             scheda = ttk.Frame(notebook)
@@ -3256,18 +3785,24 @@ class Applicazione:
                     for combinazione in combinazioni
                 ]
                 combinazioni_punteggi.sort(key=lambda riga: (riga[1], -riga[2], riga[0]))
-            filtri = (
+            filtri = [
                 ("Tutte", combinazioni_punteggi),
                 ("Con top squadre", [riga for riga in combinazioni_punteggi if any(codice in TOP_SQUADRE for codice in riga[0])]),
                 ("Senza top squadre", [riga for riga in combinazioni_punteggi if not any(codice in TOP_SQUADRE for codice in riga[0])]),
-            )
+            ]
+            miei_codici = self.squadre_portieri_miei(squadre)
+            if 0 < len(miei_codici) <= dimensione:
+                richiesti = set(miei_codici)
+                dalla_mia_rosa = [riga for riga in combinazioni_punteggi if richiesti.issubset(set(riga[0]))]
+                if dalla_mia_rosa:
+                    filtri.insert(0, ("Dalla mia rosa", dalla_mia_rosa))
             for etichetta, righe in filtri:
                 vista = ttk.Frame(viste)
                 viste.add(vista, text=etichetta)
                 if dimensione == 2:
-                    self.aggiungi_lista_incroci(vista, righe)
+                    self.aggiungi_lista_incroci(vista, righe, calendario)
                 else:
-                    self.aggiungi_lista_trii(vista, righe)
+                    self.aggiungi_lista_trii(vista, righe, calendario)
 
     def apri_formazioni_tipo(self) -> None:
         finestra = Toplevel(self.radice)
@@ -3292,6 +3827,7 @@ class Applicazione:
         elenco = ttk.Frame(tela, padding=10)
         finestra_elenco = tela.create_window((0, 0), window=elenco, anchor="nw")
         elenco.bind("<Configure>", lambda _: tela.configure(scrollregion=tela.bbox("all")))
+        self.abilita_rotellina(tela, contenuto=elenco)
         tela.bind("<Configure>", lambda evento: tela.itemconfigure(finestra_elenco, width=evento.width))
 
         immagini: list[ImageTk.PhotoImage] = []
@@ -3385,6 +3921,8 @@ class Applicazione:
                     campo.create_text(px, py + 30, text=f"{nome_mostrato} ({ruolo})", font=("Sans", 8, "bold"), fill="#1d2939", width=128, tags=(tag,))
                     if profilo:
                         campo.tag_bind(tag, "<Button-1>", lambda _, identita=profilo[0]: apri_giocatore(identita))
+                        campo.tag_bind(tag, "<Enter>", lambda _, canvas=campo: canvas.configure(cursor="hand2"))
+                        campo.tag_bind(tag, "<Leave>", lambda _, canvas=campo: canvas.configure(cursor=""))
                 ttk.Label(riquadro, text="Ballottaggi", font=("Sans", 10, "bold")).pack(anchor="w")
                 if not dati["ballottaggi"]:
                     ttk.Label(riquadro, text="Nessun ballottaggio indicato.", style="Sottotitolo.TLabel").pack(anchor="w", pady=(2, 0))
@@ -3589,6 +4127,7 @@ class Applicazione:
                 tela.configure(scrollregion=tela.bbox("all"))
 
             corpo.bind("<Configure>", aggiorna_scorrimento)
+            self.abilita_rotellina(tela, consenti_orizzontale=True, contenuto=corpo)
             for colonna, titolo in enumerate(intestazioni):
                 tk.Label(corpo, text=titolo, width=larghezza_metrica if colonna == 0 else larghezza_valore,
                          background="#eaf2ff", foreground="#1d2939", font=("Sans", 10, "bold"),
@@ -3599,7 +4138,8 @@ class Applicazione:
                          font=("Sans", 10), padx=6, pady=5, anchor="w").grid(row=indice_riga, column=0, sticky="nsew", padx=1, pady=1)
                 for colonna, valore_cella in enumerate(valori, start=1):
                     migliore = colonna - 1 in migliori
-                    tk.Label(corpo, text=valore_cella, width=larghezza_valore,
+                    testo_valore = f"▲ {valore_cella}" if migliore else valore_cella
+                    tk.Label(corpo, text=testo_valore, width=larghezza_valore,
                              background="#e8f7ef" if migliore else sfondo,
                              foreground="#067647" if migliore else "#1d2939",
                              font=("Sans", 10, "bold") if migliore else ("Sans", 10), padx=6, pady=5,
