@@ -155,21 +155,6 @@ Per avere quotazioni e statistiche aggiornate all’ultima giornata, accedi a [F
 
 Il budget predefinito è di **500 crediti**. Nella schermata **Rose della lega** puoi impostare un valore diverso e applicarlo a tutte le squadre; ogni rosa ha 3 portieri, 8 difensori, 8 centrocampisti e 6 attaccanti. I ruoli visualizzati sono esclusivamente quelli **Classic**: P, D, C e A.
 
-## 🗂️ Struttura del progetto
-
-| Percorso | Contenuto e utilizzo |
-| --- | --- |
-| `app.py` | Applicazione principale, interfaccia e migrazione automatica della precedente struttura dati. |
-| `dati_condivisibili/dati_pubblici.sqlite3` | Catalogo condivisibile con statistiche FBref di giocatori/squadre e dati API-Football. |
-| `dati_condivisibili/immagini/` | Foto dei giocatori, stemmi e bandiere inclusi nella repository. |
-| `quotazioni/` | File Excel Classic scaricati manualmente da Fantacalcio; esclusi dalla repository. |
-| `statistiche/` | File Excel Classic scaricati manualmente da Fantacalcio; esclusi dalla repository. |
-| `statistiche_avanzate/` | CSV locali FBref di statistiche giocatore, usati solo per reimportare il catalogo pubblico. |
-| `statistiche_squadre/` | CSV locali FBref di statistiche squadra, usati solo per reimportare il catalogo pubblico. |
-| `griglia_portieri/` | Griglia e calendario testuale per l'analisi portieri; esclusi dalla repository. |
-
-La vecchia cartella `dati_locali/` viene lasciata intatta come copia di sicurezza dopo la prima migrazione e rimane ignorata da Git.
-
 ## 📊 Dati, attribuzione e pubblicazione
 
 I dati restano di proprietà dei rispettivi fornitori e sono soggetti alle loro condizioni d'uso:
