@@ -2,7 +2,7 @@
 
 Un assistente desktop, in italiano e pensato per il **Fantacalcio Classic**, da tenere aperto durante l'asta. Riunisce dati storici, fasce, formazioni tipo, rose della lega, griglia portieri e strumenti di budget in un'unica applicazione utilizzabile offline.
 
-L'obiettivo è semplice: prendere decisioni rapide senza perdere il contesto. Fascia, titolarità, ballottaggi, piazzati, statistiche e situazione della propria rosa restano sempre a portata di mano. 🎯
+L'obiettivo è semplice: prendere decisioni rapide senza perdere il contesto. Fascia, titolarità, ballottaggi, piazzati, statistiche e situazione della propria rosa restano sempre a portata di mano. Il database include lo storico disponibile dei calciatori nelle ultime **10 stagioni di Serie A**. 🎯
 
 > Dati, rose, preferiti, note e cronologia dell'asta restano sul computer dell'utente. La repository pubblica separa i dati condivisibili dai dati locali e riservati.
 
@@ -35,16 +35,44 @@ L'obiettivo è semplice: prendere decisioni rapide senza perdere il contesto. Fa
 
 <p align="center"><em>Griglia portieri con incroci, combinazioni e calendario compatto.</em></p>
 
-## ✨ Cosa può fare
+<p align="center">
+  <img src="imgs/rose.png" alt="Rose della lega" width="48%">
+  <img src="imgs/registro_asta.png" alt="Registro asta" width="48%">
+</p>
 
-- Elenco ricercabile dei giocatori di Serie A 2026-27, ordinabile e filtrabile per ruolo Classic, squadra, fascia, preferiti, esclusi, disponibilità e formazione tipo.
-- Scheda giocatore con foto, stemma, nazionalità, fascia d'asta, sintesi, statistiche Classic e statistiche calcistiche dettagliate.
-- Grafici storici ridimensionabili per ogni statistica, con valori migliori evidenziati nelle tabelle.
-- Lettura del **contesto squadra**: medie delle ultime cinque stagioni complete e commento che incrocia il profilo del giocatore con rendimento offensivo o difensivo della squadra.
-- Formazioni tipo su campo, ballottaggi, titolari, fuori ruolo e gerarchie per rigori, punizioni e calci d'angolo.
-- Modalità asta live con prezzo corrente, massimo rilancio sostenibile, Piano B, preferiti, esclusi e note personali.
-- Rose permanenti della lega: crediti residui, spesa per ruolo, slot P/D/C/A, fasce, immagini e registro degli acquisti esportabile in CSV.
-- Confronto affiancato fra due o tre calciatori e griglia portieri con combinazioni a due e tre squadre.
+<p align="center"><em>Rose della lega, crediti, ruoli, fasce e registro degli acquisti.</em></p>
+
+## 🧭 Dentro il tool
+
+### Elenco giocatori
+
+La schermata iniziale riunisce tutti i giocatori di Serie A 2026-27 e mette la **fascia** al centro della lettura. Puoi cercare per nome, ordinare le colonne e filtrare per ruolo Classic, squadra, fascia, disponibilità, preferiti, esclusi e presenza nella formazione tipo. Le statistiche aggiuntive dell’elenco sono selezionabili una per una, con descrizione al passaggio del mouse.
+
+### Scheda giocatore
+
+Ogni scheda è progettata per distinguere subito le informazioni utili in asta.
+
+- **Profilo in alto**: foto, stemma, ruolo Classic, squadra, nazionalità, età, QtA, FVM, fascia, pro e contro generati dalle statistiche.
+- **Indicazioni tattiche**: titolarità, ballottaggi con gerarchia, eventuale fuori ruolo e priorità per rigori, punizioni e angoli.
+- **Statistiche di rendimento**: valori Classic, andamento MV e FM, medie storiche e tabelle dettagliate per prestazioni, tiro, impiego, disciplina/difesa e portieri quando disponibili.
+- **Lettura nel tempo**: ogni metrica è spiegata al passaggio del mouse e può aprire un grafico storico ridimensionabile, con bande che identificano le squadre di appartenenza.
+- **Contesto squadra**: sintesi delle ultime cinque stagioni, con commento che collega i volumi offensivi o difensivi della squadra al profilo del calciatore.
+
+### Confronti e formazioni tipo
+
+Confronta fino a tre giocatori affiancando fascia, piazzati, statistiche principali e storico; i valori migliori sono evidenziati. La sezione **Formazioni tipo** mostra le squadre sul campo con foto, ruolo Classic, stemma, titolari e ballottaggi; puoi filtrare subito per squadra.
+
+### Asta live
+
+Registra ogni acquisto con fantallenatore e prezzo. Il giocatore diventa non disponibile e l’app aggiorna istantaneamente crediti residui, slot P/D/C/A e massimo rilancio sostenibile. Preferiti, esclusi, note personali e Piano B aiutano a mantenere una lista di alternative concreta durante l’asta.
+
+### Rose della lega e registro
+
+Le rose della lega sono affiancate e aggiornate dal vivo, con foto, stemma, squadra di Serie A, fascia, prezzo, crediti, spesa per ruolo e fabbisogni. Puoi aggiungere o rimuovere fantallenatori, correggere un acquisto, esportare rose, registro e riepilogo finale in CSV e ripristinare la lega allo scenario iniziale con backup preventivo. Il pulsante **Annulla** nella schermata principale revoca l’ultima operazione d’asta registrata.
+
+### Portieri
+
+La **Griglia portieri** visualizza le sovrapposizioni con una scala cromatica immediata. Puoi selezionare squadre o incroci, vedere i portieri disponibili e confrontare i migliori o peggiori abbinamenti a due e tre squadre. Il mini-calendario a 38 giornate evidenzia quando esiste almeno un portiere che non affronta top o semitop.
 
 ## 🖥️ Requisiti
 
@@ -146,8 +174,8 @@ La vecchia cartella `dati_locali/` viene lasciata intatta come copia di sicurezz
 
 I dati restano di proprietà dei rispettivi fornitori e sono soggetti alle loro condizioni d'uso:
 
-- **Fantacalcio**: dati Classic, quotazioni e statistiche fantacalcistiche. Proprietà e diritti: [Fantacalcio](https://www.fantacalcio.it/). I file non vengono inclusi nella repository pubblica.
-- **FBref / Sports Reference**: statistiche calcistiche storiche di giocatori e squadre. Proprietà e diritti: [FBref](https://fbref.com/) / [Sports Reference](https://www.sports-reference.com/). Quando si usano dati Sports Reference, è necessario citarli e fornire una menzione e/o un collegamento.
+- **Fantacalcio**: dati Classic, quotazioni e statistiche fantacalcistiche. Proprietà e diritti: [Fantacalcio](https://www.fantacalcio.it/).
+- **FBref / Sports Reference**: statistiche calcistiche storiche di giocatori e squadre. Proprietà e diritti: [FBref](https://fbref.com/) / [Sports Reference](https://www.sports-reference.com/).
 - **API-Football / API-Sports**: dati anagrafici, collegamenti a immagini e stemmi quando presenti. Proprietà e diritti: [API-Football](https://www.api-football.com/) / [API-Sports](https://www.api-sports.io/).
 
 ---

@@ -385,6 +385,25 @@ COLLEGAMENTI_MANUALI_FBREF = {
     "582a251c": "Vigorito",
     "d8cda243": "Yildiz",
     "986dc2e3": "Ziolkowski",
+    "75118ebf": "Esposito Se.",
+    "8b61ea62": "Rrahmani Al.",
+    "47c609d5": "Tourè E.",
+    "57ad9bf4": "Cichella",
+    "04df29a5": "Colombo L.",
+    "a9202def": "Ederson D.S.",
+    "9ed58e6b": "Fofana Sa.",
+    "2374aaca": "Gonzalez N.",
+    "66c7442e": "Laerke",
+    "4a5a45c7": "Pellegrini Lo.",
+    "7d9397f8": "Thuram K.",
+    "570bb4b9": "Traorè Hj.",
+    "6bb2c084": "Zambo Anguissa",
+    "eb3df7d9": "Dembelè A.",
+    "e19e0ca1": "Floriani Mussolini",
+    "5c86aa04": "Maye",
+    "3b61c9ec": "Pellegrini Lu.",
+    "724a87e2": "Lolic",
+    "085a07e8": "Pessina Mas.",
 }
 GRIGLIA_PORTIERI_PATH = ROOT / "griglia_portieri" / "Griglia_Portieri_Fantacalcio_Stagione_2026-27.xlsx"
 CALENDARIO_PORTIERI_PATH = ROOT / "griglia_portieri" / "calendario_serie_a_2026_2027.txt"
@@ -2611,7 +2630,9 @@ class Applicazione:
         self.anagrafica_scheda.configure(text=f"Nazionalità: {nazionalita}")
         self.eta_scheda.configure(text=f" - Età: {eta} anni" if eta != "—" else " - Età: —")
         self.aggiorna_bandiera(codice_nazione)
-        self.aggiornamento_scheda.configure(text=f"Dati aggiornati il {self.formato_data(aggiornato_il)}" if aggiornato_il else "")
+        ultimo_reimporta = self.db.execute("SELECT valore FROM impostazioni WHERE chiave=?", ("ultimo_reimporta",)).fetchone()
+        data_aggiornamento = ultimo_reimporta[0] if ultimo_reimporta else aggiornato_il
+        self.aggiornamento_scheda.configure(text=f"Dati aggiornati il {self.formato_data(data_aggiornamento)}" if data_aggiornamento else "")
         self.aggiorna_foto(giocatore[3])
         self.aggiorna_stemma(None, squadra_anagrafica)
         self.aggiorna_contesto_squadra(giocatore[2] or squadra_anagrafica, giocatore[1], identita)
@@ -3262,6 +3283,43 @@ class Applicazione:
             except OSError as errore:
                 messagebox.showerror("Esporta rose", f"Impossibile salvare il file.\n{errore}", parent=finestra)
 
+        def esporta_riepilogo_finale() -> None:
+            percorso = filedialog.asksaveasfilename(
+                parent=finestra, title="Esporta riepilogo finale", defaultextension=".csv",
+                initialfile="riepilogo_asta.csv", filetypes=[("File CSV", "*.csv"), ("Tutti i file", "*.*")],
+            )
+            if not percorso:
+                return
+            try:
+                with open(percorso, "w", encoding="utf-8-sig", newline="") as file_csv:
+                    scrittore = csv.writer(file_csv, delimiter=";")
+                    scrittore.writerow(("Riepilogo finale asta", "Generato il", self.formato_data(datetime.now().isoformat(timespec="seconds"))))
+                    scrittore.writerow(())
+                    scrittore.writerow(("Sezione", "Fantallenatore", "Crediti iniziali", "Crediti residui", "Spesa totale", "Ruolo", "Giocatori ruolo", "Slot ruolo", "Spesa ruolo", "Calciatore", "Squadra Serie A", "Fascia", "Prezzo", "Data", "Operazione"))
+                    fantallenatori = self.db.execute("SELECT id, nome FROM fantallenatori ORDER BY e_mio DESC, nome").fetchall()
+                    for identita, fantallenatore in fantallenatori:
+                        residuo, speso, quantita, speso_ruolo, _ = self.riepilogo_fantallenatore(identita)
+                        scrittore.writerow(("Budget", fantallenatore, residuo + speso, residuo, speso, "", "", "", "", "", "", "", "", "", ""))
+                        for ruolo in ROSA:
+                            scrittore.writerow(("Ruolo", fantallenatore, "", "", "", ruolo, quantita[ruolo], ROSA[ruolo], speso_ruolo[ruolo], "", "", "", "", "", ""))
+                    for data, fantallenatore, ruolo, giocatore, squadra, fascia, prezzo in righe_registro():
+                        scrittore.writerow(("Rosa", fantallenatore, "", "", "", ruolo, "", "", "", giocatore, squadra or "", fascia, prezzo, self.formato_data(data), "Acquisto attuale"))
+                    cronologia = self.db.execute("""
+                        SELECT c.registrato_il, c.azione, f.nome, g.ruolo, g.nome, g.squadra,
+                               COALESCE((SELECT categoria FROM tag_asta t WHERE t.giocatore_id=g.id ORDER BY posizione LIMIT 1), "Da assegnare"),
+                               c.prezzo
+                        FROM cronologia_asta c
+                        JOIN fantallenatori f ON f.id=c.fantallenatore_id
+                        JOIN giocatori g ON g.id=c.giocatore_id
+                        ORDER BY c.registrato_il, c.id
+                    """).fetchall()
+                    for data, azione, fantallenatore, ruolo, giocatore, squadra, fascia, prezzo in cronologia:
+                        operazione = "Acquisto" if azione == "acquisto" else "Rimozione"
+                        scrittore.writerow(("Cronologia", fantallenatore, "", "", "", ruolo, "", "", "", giocatore, squadra or "", fascia, prezzo, self.formato_data(data), operazione))
+                self.stato.set("Riepilogo finale esportato.")
+            except OSError as errore:
+                messagebox.showerror("Esporta riepilogo", f"Impossibile salvare il file.\n{errore}", parent=finestra)
+
         def ripristina_rose() -> None:
             crediti = self.crediti_iniziali_lega()
             conferma = messagebox.askyesno(
@@ -3293,6 +3351,7 @@ class Applicazione:
             self.mostra_feedback(f"Rose ripristinate. Backup: {backup.name}")
 
         ttk.Button(testata, text="Ripristina rose", command=ripristina_rose).pack(side="right")
+        ttk.Button(testata, text="Riepilogo CSV", command=esporta_riepilogo_finale).pack(side="right", padx=(0, 6))
         ttk.Button(testata, text="Esporta rose CSV", command=esporta_rose).pack(side="right", padx=(0, 6))
 
         def aggiorna_schede() -> None:
@@ -4348,6 +4407,11 @@ def prepara_dati() -> None:
         print(f"Importate {tiratori} assegnazioni per i piazzati; da verificare: {tiratori_non_abbinati}.")
         print(f"Importate {formazione} indicazioni da formazione tipo e ballottaggi.")
         print(f"Importate {nazionalita} nazionalità.")
+        connessione.execute("""
+            INSERT INTO impostazioni(chiave, valore) VALUES (?, ?)
+            ON CONFLICT(chiave) DO UPDATE SET valore=excluded.valore
+        """, ("ultimo_reimporta", datetime.now().isoformat(timespec="seconds")))
+        connessione.commit()
     finally:
         connessione.close()
 
