@@ -42,6 +42,7 @@ FOTO_DIR = PUBLIC_DATA_DIR / "immagini" / "foto"
 STEMMI_DIR = PUBLIC_DATA_DIR / "immagini" / "stemmi"
 BANDIERE_DIR = PUBLIC_DATA_DIR / "immagini" / "bandiere"
 BACKUP_ASTA_DIR = PRIVATE_DATA_DIR / "backup_asta"
+FASCE_PREDEFINITE_PATH = PUBLIC_DATA_DIR / "fasce_predefinite.csv"
 API_KEY_PATH = ROOT / "api_football_key.txt"
 API_BASE = "https://v3.football.api-sports.io"
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"
@@ -1610,6 +1611,33 @@ def importa_fasce(connessione: sqlite3.Connection, percorso: Path) -> tuple[int,
     connessione.executemany("INSERT INTO problemi_importazione VALUES ('fasce', ?)", ((x,) for x in problemi))
     connessione.commit()
     return posizione, problemi
+
+
+def importa_fasce_predefinite(connessione: sqlite3.Connection) -> int:
+    """Carica le fasce-base condivise solo al primo avvio locale."""
+    if not FASCE_PREDEFINITE_PATH.exists() or connessione.execute(
+        "SELECT 1 FROM tag_asta LIMIT 1"
+    ).fetchone():
+        return 0
+    righe: list[tuple[int, str, str, int]] = []
+    with FASCE_PREDEFINITE_PATH.open(encoding="utf-8", newline="") as file_csv:
+        for indice, riga in enumerate(csv.DictReader(file_csv), start=1):
+            try:
+                giocatore_id = int(riga["giocatore_id"])
+                categoria = riga["categoria"].strip()
+            except (KeyError, TypeError, ValueError):
+                continue
+            if categoria not in FASCE:
+                continue
+            try:
+                posizione = int(riga.get("posizione") or indice)
+            except ValueError:
+                posizione = indice
+            righe.append((giocatore_id, categoria, "", posizione))
+    if righe:
+        connessione.executemany("INSERT OR IGNORE INTO tag_asta VALUES (?, ?, ?, ?)", righe)
+        connessione.commit()
+    return len(righe)
 
 
 class Suggerimento:
@@ -4393,7 +4421,10 @@ def prepara_dati() -> None:
         crea_database(connessione)
         statistiche, quotazioni = importa_fantacalcio(connessione)
         documento = percorso_fasce_locali()
-        fasce, problemi = importa_fasce(connessione, documento) if documento.exists() else (0, [])
+        if documento.exists():
+            fasce, problemi = importa_fasce(connessione, documento)
+        else:
+            fasce, problemi = importa_fasce_predefinite(connessione), []
         righe_fbref, abbinati_fbref = importa_fbref(connessione)
         squadre_fbref = importa_statistiche_squadre_fbref(connessione)
         collegamenti_manuali = applica_collegamenti_manuali_fbref(connessione)
@@ -4445,6 +4476,7 @@ def main() -> None:
         return
     connessione = apri_connessione()
     crea_database(connessione)
+    importa_fasce_predefinite(connessione)
     importa_statistiche_squadre_fbref(connessione)
     importa_tiratori(connessione)
     importa_infografica(connessione)
