@@ -6,6 +6,8 @@ L'obiettivo è semplice: prendere decisioni rapide senza perdere il contesto. Fa
 
 > Dati, rose, preferiti, note e cronologia dell'asta restano sul computer dell'utente. La repository pubblica separa i dati condivisibili dai dati locali e riservati.
 
+**Ultimo update**: elenco giocatori aggiornato al 1 Settembre 2026.
+
 ## 🖼️ Anteprima
 
 <p align="center">
@@ -19,6 +21,19 @@ L'obiettivo è semplice: prendere decisioni rapide senza perdere il contesto. Fa
 </p>
 
 <p align="center"><em>Grafici storici ridimensionabili per leggere l'andamento delle statistiche.</em></p>
+
+<p align="center">
+  <img src="imgs/confronto.png" alt="Confronto affiancato tra calciatori" width="48%">
+  <img src="imgs/formazioni_tipo.png" alt="Formazioni tipo e ballottaggi" width="48%">
+</p>
+
+<p align="center"><em>Confronto fra calciatori, formazioni tipo e ballottaggi.</em></p>
+
+<p align="center">
+  <img src="imgs/griglia_portieri.png" alt="Griglia portieri e abbinamenti" width="900">
+</p>
+
+<p align="center"><em>Griglia portieri con incroci, combinazioni e calendario compatto.</em></p>
 
 ## ✨ Cosa può fare
 
@@ -98,6 +113,10 @@ py app.py --reimporta
 
 > `--reimporta` ricostruisce i dati importati delle fonti locali. Conserva una copia di `dati_riservati/` prima di usarlo se vuoi una fotografia separata della tua asta.
 
+### Aggiornare i dati dopo una giornata di Serie A
+
+Per avere quotazioni e statistiche aggiornate all’ultima giornata, accedi a [Fantacalcio](https://www.fantacalcio.it/) con il tuo account e scarica i file XLSX **Quotazioni** e **Statistiche** della stagione corrente. Sostituiscili nelle cartelle `quotazioni/` e `statistiche/`, quindi avvia l app con `--reimporta`.
+
 ## 🧭 Uso in asta
 
 1. Apri **Rose lega**, inserisci i fantallenatori e indica quale è la tua squadra.
@@ -106,7 +125,7 @@ py app.py --reimporta
 4. Registra l'acquisto alla squadra corretta. Disponibilità, rose, budget e registro si aggiornano subito.
 5. Usa preferiti, esclusi, note e Piano B per non perdere le alternative.
 
-Il budget predefinito è di **600 crediti**; ogni rosa ha 3 portieri, 8 difensori, 8 centrocampisti e 6 attaccanti. I ruoli visualizzati sono esclusivamente quelli **Classic**: P, D, C e A.
+Il budget predefinito è di **500 crediti**. Nella schermata **Rose della lega** puoi impostare un valore diverso e applicarlo a tutte le squadre; ogni rosa ha 3 portieri, 8 difensori, 8 centrocampisti e 6 attaccanti. I ruoli visualizzati sono esclusivamente quelli **Classic**: P, D, C e A.
 
 ## 🗂️ Struttura del progetto
 

@@ -230,6 +230,7 @@ def apri_connessione() -> sqlite3.Connection:
     return connessione
 WORD_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 ROSA = {"P": 3, "D": 8, "C": 8, "A": 6}
+CREDITI_INIZIALI_PREDEFINITI = 500
 TEAM_CODES = {
     "ATA": "ATALANTA", "BOL": "BOLOGNA", "CAG": "CAGLIARI", "COM": "COMO",
     "FIO": "FIORENTINA", "FRO": "FROSINONE", "GEN": "GENOA", "INT": "INTER",
@@ -680,7 +681,7 @@ def crea_database(connessione: sqlite3.Connection) -> None:
         CREATE TABLE IF NOT EXISTS fantallenatori (
             id INTEGER PRIMARY KEY,
             nome TEXT NOT NULL UNIQUE,
-            crediti_iniziali INTEGER NOT NULL DEFAULT 600 CHECK(crediti_iniziali >= 1),
+            crediti_iniziali INTEGER NOT NULL DEFAULT 500 CHECK(crediti_iniziali >= 1),
             e_mio INTEGER NOT NULL DEFAULT 0 CHECK(e_mio IN (0, 1))
         );
         CREATE TABLE IF NOT EXISTS acquisti_lega (
@@ -724,7 +725,7 @@ def crea_database(connessione: sqlite3.Connection) -> None:
             else:
                 connessione.execute("UPDATE fantallenatori SET e_mio=0 WHERE id=?", (identita,))
     if not connessione.execute("SELECT 1 FROM fantallenatori WHERE e_mio=1 LIMIT 1").fetchone():
-        connessione.execute("INSERT INTO fantallenatori(nome, crediti_iniziali, e_mio) VALUES ('La mia squadra', 600, 1)")
+        connessione.execute("INSERT INTO fantallenatori(nome, crediti_iniziali, e_mio) VALUES ('La mia squadra', 500, 1)")
     connessione.execute("CREATE UNIQUE INDEX IF NOT EXISTS una_sola_mia_squadra ON fantallenatori(e_mio) WHERE e_mio=1")
     migrazione_completata = connessione.execute(
         "SELECT 1 FROM impostazioni WHERE chiave='migrazione_rose_lega_v1'"
@@ -738,7 +739,7 @@ def crea_database(connessione: sqlite3.Connection) -> None:
             """)
             connessione.execute("""
                 INSERT OR IGNORE INTO fantallenatori(nome, crediti_iniziali, e_mio)
-                SELECT 'Avversario', 600, 0 WHERE EXISTS (SELECT 1 FROM giocatori_venduti WHERE acquirente='avversario')
+                SELECT 'Avversario', 500, 0 WHERE EXISTS (SELECT 1 FROM giocatori_venduti WHERE acquirente='avversario')
             """)
             connessione.execute("""
                 INSERT OR IGNORE INTO acquisti_lega(giocatore_id, fantallenatore_id, prezzo, registrato_il)
@@ -3074,20 +3075,29 @@ class Applicazione:
             posizione += immagine.width + 3
         return ImageTk.PhotoImage(composita)
 
-    def budget(self) -> tuple[int, int, dict[str, int]]:
+    def crediti_iniziali_lega(self) -> int:
+        riga = self.db.execute("SELECT valore FROM impostazioni WHERE chiave=?", ("crediti_iniziali_lega",)).fetchone()
+        try:
+            valore = int(riga[0]) if riga else CREDITI_INIZIALI_PREDEFINITI
+        except (TypeError, ValueError):
+            valore = CREDITI_INIZIALI_PREDEFINITI
+        return valore if valore >= 1 else CREDITI_INIZIALI_PREDEFINITI
+
+    def budget(self) -> tuple[int, int, int, dict[str, int]]:
         mio = self.db.execute("SELECT id, crediti_iniziali FROM fantallenatori WHERE e_mio=1 ORDER BY id LIMIT 1").fetchone()
         if mio is None:
-            return 600, sum(ROSA.values()), {ruolo: 0 for ruolo in ROSA}
+            crediti = self.crediti_iniziali_lega()
+            return crediti, crediti, sum(ROSA.values()), {ruolo: 0 for ruolo in ROSA}
         righe = self.db.execute("SELECT g.ruolo, COUNT(*), COALESCE(SUM(a.prezzo), 0) FROM acquisti_lega a JOIN giocatori g ON g.id=a.giocatore_id WHERE a.fantallenatore_id=? GROUP BY g.ruolo", (mio[0],)).fetchall()
         per_ruolo = {ruolo: 0 for ruolo in ROSA}; speso = 0
         for ruolo, conteggio, totale in righe:
             per_ruolo[ruolo] = conteggio; speso += totale
-        return mio[1] - speso, sum(ROSA.values()) - sum(per_ruolo.values()), per_ruolo
+        return mio[1] - speso, mio[1], sum(ROSA.values()) - sum(per_ruolo.values()), per_ruolo
 
     def aggiorna_budget(self) -> None:
-        residuo, slot, per_ruolo = self.budget()
+        residuo, crediti_iniziali, slot, per_ruolo = self.budget()
         massimo = residuo - max(slot - 1, 0)
-        self.riepilogo_budget.configure(text=f"Crediti: {residuo}/600 · Rilancio massimo: {massimo}")
+        self.riepilogo_budget.configure(text=f"Crediti: {residuo}/{crediti_iniziali} · Rilancio massimo: {massimo}")
         for ruolo in ROSA:
             self.riepilogo_ruoli[ruolo].configure(text=f"{ruolo} {per_ruolo[ruolo]}/{ROSA[ruolo]}")
         if hasattr(self, "prezzo_live"):
@@ -3194,6 +3204,7 @@ class Applicazione:
         gestione.pack(fill="x")
         ttk.Label(gestione, text="Nome fantallenatore").pack(side="left")
         nome = StringVar()
+        credito_iniziale = StringVar(value=str(self.crediti_iniziali_lega()))
         campo = ttk.Entry(gestione, textvariable=nome, width=28)
         campo.pack(side="left", padx=8)
         squadra_da_rimuovere = StringVar()
@@ -3251,7 +3262,38 @@ class Applicazione:
             except OSError as errore:
                 messagebox.showerror("Esporta rose", f"Impossibile salvare il file.\n{errore}", parent=finestra)
 
-        ttk.Button(testata, text="Esporta rose CSV", command=esporta_rose).pack(side="right")
+        def ripristina_rose() -> None:
+            crediti = self.crediti_iniziali_lega()
+            conferma = messagebox.askyesno(
+                "Ripristina rose",
+                "Verranno eliminati tutti i fantallenatori, gli acquisti e la cronologia dell’asta.\n\n"
+                f"Rimarrà soltanto La mia squadra con {crediti} crediti. Verrà creato prima un backup locale.\n\n"
+                "Vuoi continuare?",
+                icon="warning", parent=finestra,
+            )
+            if not conferma:
+                return
+            try:
+                backup = crea_backup_asta(self.db)
+                self.db.execute("DELETE FROM acquisti_lega")
+                self.db.execute("DELETE FROM cronologia_asta")
+                self.db.execute("DELETE FROM fantallenatori")
+                self.db.execute(
+                    "INSERT INTO fantallenatori(nome, crediti_iniziali, e_mio) VALUES (?, ?, ?)",
+                    ("La mia squadra", crediti, 1),
+                )
+                self.db.commit()
+            except sqlite3.Error as errore:
+                self.db.rollback()
+                messagebox.showerror("Ripristina rose", f"Impossibile ripristinare le rose.\n{errore}", parent=finestra)
+                return
+            self.aggiorna_budget()
+            self.aggiorna_elenco()
+            self.aggiorna_rose_aperte()
+            self.mostra_feedback(f"Rose ripristinate. Backup: {backup.name}")
+
+        ttk.Button(testata, text="Ripristina rose", command=ripristina_rose).pack(side="right")
+        ttk.Button(testata, text="Esporta rose CSV", command=esporta_rose).pack(side="right", padx=(0, 6))
 
         def aggiorna_schede() -> None:
             for contenitore in (vista_rose, registro):
@@ -3295,7 +3337,7 @@ class Applicazione:
                 scheda = ttk.LabelFrame(colonne_rose, text=nome_fantallenatore + (" · mia" if e_mio else ""), padding=8)
                 scheda.grid(row=indice // 4, column=indice % 4, sticky="ns", padx=4, pady=4)
                 residuo, speso, quantita, speso_ruolo, acquisti = self.riepilogo_fantallenatore(identita)
-                ttk.Label(scheda, text=f"Crediti: {residuo}/600 · Spesi: {speso}", font=("Sans", 10, "bold")).pack(anchor="w")
+                ttk.Label(scheda, text=f"Crediti: {residuo}/{residuo + speso} · Spesi: {speso}", font=("Sans", 10, "bold")).pack(anchor="w")
                 ttk.Label(scheda, text=" · ".join(f"{ruolo} {quantita[ruolo]}/{ROSA[ruolo]}" for ruolo in ROSA), style="Sottotitolo.TLabel").pack(anchor="w", pady=(3, 0))
                 massimo = max((self.massimo_offerta(identita, ruolo) for ruolo in ROSA if quantita[ruolo] < ROSA[ruolo]), default=0)
                 ttk.Label(scheda, text=f"{self.testo_fabbisogni(quantita)} · Max: {massimo} cr", style="Sottotitolo.TLabel", wraplength=440).pack(anchor="w", pady=(2, 6))
@@ -3394,11 +3436,37 @@ class Applicazione:
                 messagebox.showerror("Rose della lega", "Inserisci il nome del fantallenatore.", parent=finestra)
                 return
             try:
-                self.db.execute("INSERT INTO fantallenatori(nome, crediti_iniziali) VALUES (?, 600)", (valore,))
+                self.db.execute("INSERT INTO fantallenatori(nome, crediti_iniziali) VALUES (?, ?)", (valore, self.crediti_iniziali_lega()))
             except sqlite3.IntegrityError:
                 messagebox.showerror("Rose della lega", "Questo fantallenatore è già presente.", parent=finestra)
                 return
             nome.set("")
+            self.salva_modifica_asta()
+
+        def applica_crediti_iniziali() -> None:
+            try:
+                valore_crediti = int(credito_iniziale.get())
+            except ValueError:
+                messagebox.showerror("Crediti iniziali", "Inserisci un numero intero positivo.", parent=finestra)
+                return
+            if valore_crediti < 1:
+                messagebox.showerror("Crediti iniziali", "I crediti iniziali devono essere almeno 1.", parent=finestra)
+                return
+            spesa_massima = self.db.execute("""
+                SELECT COALESCE(MAX(spesa), 0) FROM (
+                    SELECT SUM(prezzo) AS spesa FROM acquisti_lega GROUP BY fantallenatore_id
+                )
+            """).fetchone()[0]
+            if valore_crediti < spesa_massima:
+                messagebox.showerror("Crediti iniziali", f"Il valore non può essere inferiore alla spesa già registrata ({spesa_massima} cr).", parent=finestra)
+                return
+            if not messagebox.askyesno("Crediti iniziali", f"Applicare {valore_crediti} crediti iniziali a tutte le squadre della lega?", parent=finestra):
+                return
+            self.db.execute("""
+                INSERT INTO impostazioni(chiave, valore) VALUES (?, ?)
+                ON CONFLICT(chiave) DO UPDATE SET valore=excluded.valore
+            """, ("crediti_iniziali_lega", str(valore_crediti)))
+            self.db.execute("UPDATE fantallenatori SET crediti_iniziali=?", (valore_crediti,))
             self.salva_modifica_asta()
 
         def rimuovi_fantallenatore() -> None:
@@ -3434,6 +3502,12 @@ class Applicazione:
                 return
             nome.set("")
             self.salva_modifica_asta()
+
+        crediti_gestione = ttk.Frame(gestione)
+        crediti_gestione.pack(side="right")
+        ttk.Label(crediti_gestione, text="Crediti iniziali").pack(side="left", padx=(0, 4))
+        ttk.Entry(crediti_gestione, textvariable=credito_iniziale, width=6).pack(side="left")
+        ttk.Button(crediti_gestione, text="Applica crediti", command=applica_crediti_iniziali).pack(side="left", padx=(6, 0))
 
         ttk.Button(gestione, text="Aggiungi", command=aggiungi_fantallenatore).pack(side="left")
         ttk.Button(gestione, text="Rinomina la mia squadra", command=rinomina_mia_squadra).pack(side="left", padx=6)
